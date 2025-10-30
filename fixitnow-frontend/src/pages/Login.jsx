@@ -1,123 +1,5 @@
 
-// import React, { useState } from "react";
-// import api from "../api/axiosInstance";
-// import { useNavigate, Link } from "react-router-dom";
 
-// export default function Login() {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [msg, setMsg] = useState("");
-//   const nav = useNavigate();
-
-//   const submit = async (e) => {
-//     e.preventDefault();
-//     try {
-//       const res = await api.post("/api/auth/login", { email, password });
-//       const data = res.data;
-
-//       const accessToken = data.accessToken || data.token;
-//       const refreshToken = data.refreshToken;
-//       const role = data.role; // backend must return role
-
-//       if (accessToken) localStorage.setItem("accessToken", accessToken);
-//       if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-//       if (role) localStorage.setItem("role", role);
-
-//       setMsg("✅ Login successful! Redirecting...");
-
-//       // Redirect based on role
-//       setTimeout(() => {
-//         // After login we want customers to land on the "Browse Services" link
-//         // which is `/customer-panel` (shown in the NavBar). Previously this
-//         // went to `/services` — update to the panel route.
-//         if (role === "CUSTOMER") nav("/customer-panel");
-//         else if (role === "PROVIDER") nav("/provider");
-//         else if (role === "ADMIN") nav("/admin-dashboard");
-//         else nav("/"); // fallback
-//       }, 800);
-//     } catch (err) {
-//       const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
-//       setMsg(serverMsg ? `❌ ${serverMsg}` : "❌ Invalid credentials");
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
-//       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
-//         <h2 className="text-2xl font-bold text-center mb-6 text-green-700">Welcome Back</h2>
-
-//         <form onSubmit={submit} className="space-y-4">
-//           <input
-//             type="email"
-//             className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
-//             placeholder="Email Address"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             required
-//           />
-
-//           <div className="relative">
-//             <input
-//               type={showPassword ? "text" : "password"}
-//               className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-400 outline-none pr-10"
-//               placeholder="Password"
-//               value={password}
-//               onChange={(e) => setPassword(e.target.value)}
-//               required
-//             />
-
-//             <button
-//               type="button"
-//               onClick={() => setShowPassword((s) => !s)}
-//               className="absolute inset-y-0 right-2 flex items-center px-2 text-gray-500 hover:text-gray-700"
-//               aria-label={showPassword ? "Hide password" : "Show password"}
-//             >
-//               {showPassword ? (
-//                 // eye icon (password visible)
-//                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-//                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-//                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-//                 </svg>
-//               ) : (
-//                 // eye-off icon (password hidden) - full eye + slash so it doesn't look clipped
-//                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-//                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-//                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-//                   <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round" strokeLinejoin="round" />
-//                 </svg>
-//               )}
-//             </button>
-//           </div>
-
-//           <button
-//             type="submit"
-//             className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-//           >
-//             🔑 Login
-//           </button>
-
-//           {msg && (
-//             <div
-//               className={`text-sm mt-2 p-2 rounded ${
-//                 msg.startsWith("✅") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-//               }`}
-//             >
-//               {msg}
-//             </div>
-//           )}
-//         </form>
-
-//         <div className="text-center mt-4 text-sm text-gray-600">
-//           Don’t have an account?{" "}
-//           <Link to="/register" className="text-green-600 hover:underline">
-//             Register here
-//           </Link>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 import React, { useState } from "react";
 import api from "../api/axiosInstance";
 import { useNavigate, Link } from "react-router-dom";
@@ -168,74 +50,116 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6 text-green-700">Welcome Back</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
+      <div className="max-w-md w-full">
+        <div className="relative">
+          {/* subtle decorative blobs (kept subtle like Register.jsx) */}
+          <div className="absolute -top-12 -left-8 w-48 h-48 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
+          <div className="absolute -bottom-10 -right-6 w-48 h-48 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
 
-        <form onSubmit={submit} className="space-y-4">
-          <input
-            type="email"
-            className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-400 outline-none pr-10"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword((s) => !s)}
-              className="absolute inset-y-0 right-2 flex items-center px-2 text-gray-500 hover:text-gray-700"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden transform hover:shadow-3xl transition-all duration-300">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-8 text-center">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-3 shadow">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 8a6 6 0 11-12 0 6 6 0 0112 0zM3 20a9 9 0 0118 0" />
                 </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </button>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-1">Welcome Back</h2>
+              <p className="text-white/80 text-sm">Sign in to continue to your dashboard</p>
+            </div>
+
+            {/* Form */}
+            <div className="p-8">
+              <form onSubmit={submit} className="space-y-5" aria-describedby="login-help">
+                <div>
+                  <label htmlFor="login-email" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    id="login-email"
+                    type="email"
+                    className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200"
+                    placeholder="your.email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    aria-required="true"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="login-password" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="login-password"
+                      type={showPassword ? "text" : "password"}
+                      className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none pr-12 transition-all duration-200"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      aria-required="true"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute inset-y-0 right-3 flex items-center px-2 text-gray-500 hover:text-gray-700"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white py-3.5 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>🔑 Login</span>
+                </button>
+
+                {/* message area (aria-live for screen readers) */}
+                {msg && (
+                  <div
+                    id="login-help"
+                    role="status"
+                    aria-live="polite"
+                    className={`text-sm mt-2 p-3 rounded-xl border-2 ${
+                      msg.startsWith("✅") ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"
+                    }`}
+                  >
+                    {msg}
+                  </div>
+                )}
+              </form>
+
+              <div className="text-center mt-4 text-sm text-gray-600">
+                Don't have an account?{" "}
+                <Link to="/register" className="text-indigo-600 font-semibold hover:underline">
+                  Register here
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-          >
-            🔑 Login
-          </button>
-
-          {msg && (
-            <div
-              className={`text-sm mt-2 p-2 rounded ${
-                msg.startsWith("✅") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-              }`}
-            >
-              {msg}
-            </div>
-          )}
-        </form>
-
-        <div className="text-center mt-4 text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link to="/register" className="text-green-600 hover:underline">
-            Register here
-          </Link>
+          <p className="text-center text-gray-400 text-xs mt-4">By signing in you agree to our Terms & Privacy Policy</p>
         </div>
       </div>
     </div>

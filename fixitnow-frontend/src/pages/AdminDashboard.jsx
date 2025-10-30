@@ -1,71 +1,3 @@
-// // src/pages/AdminDashboard.jsx
-// import React, { useEffect, useState } from "react";
-// import api from "../api/axiosInstance";
-
-// export default function AdminDashboard() {
-//   const [stats, setStats] = useState(null);
-//   const [users, setUsers] = useState([]);
-
-//   useEffect(() => {
-//     // sample: get summary/stats if backend has endpoint. If not, it will fail silently.
-//     (async () => {
-//       try {
-//         const res = await api.get("/api/admin/summary"); // optional endpoint
-//         setStats(res.data);
-//       } catch (e) {
-//         // ignore if endpoint not present
-//       }
-//       try {
-//         const resp = await api.get("/api/admin/users"); // optional admin users endpoint
-//         setUsers(resp.data || []);
-//       } catch (e) {
-//         // ignore
-//       }
-//     })();
-//   }, []);
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-10">
-//       <div className="max-w-6xl mx-auto px-6">
-//         <div className="bg-white rounded-2xl shadow p-6 mb-6">
-//           <h1 className="text-3xl font-bold text-green-700">Admin Dashboard</h1>
-//           <p className="text-gray-600 mt-1">Manage users, providers and bookings from here.</p>
-//         </div>
-
-//         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-//           <div className="bg-white rounded-xl shadow p-4">
-//             <h3 className="text-sm text-gray-500">Total Users</h3>
-//             <p className="text-2xl font-semibold">{stats?.totalUsers ?? "—"}</p>
-//           </div>
-//           <div className="bg-white rounded-xl shadow p-4">
-//             <h3 className="text-sm text-gray-500">Providers</h3>
-//             <p className="text-2xl font-semibold">{stats?.providers ?? "—"}</p>
-//           </div>
-//           <div className="bg-white rounded-xl shadow p-4">
-//             <h3 className="text-sm text-gray-500">Bookings</h3>
-//             <p className="text-2xl font-semibold">{stats?.bookings ?? "—"}</p>
-//           </div>
-//         </div>
-
-//         <div className="bg-white rounded-xl shadow p-4">
-//           <h2 className="text-lg font-semibold mb-3">Recent users</h2>
-//           <div className="space-y-2">
-//             {users.length === 0 && <div className="text-gray-500">No user data (or endpoint not implemented).</div>}
-//             {users.map((u) => (
-//               <div key={u.id} className="flex items-center justify-between border p-3 rounded">
-//                 <div>
-//                   <div className="font-medium">{u.name}</div>
-//                   <div className="text-sm text-gray-500">{u.email} • {u.role}</div>
-//                 </div>
-//                 <div className="text-sm text-gray-500">{new Date(u.created_at || u.createdAt || Date.now()).toLocaleString()}</div>
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
 
 import React, { useEffect, useState } from "react";
@@ -158,53 +90,72 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-gray-500">Loading admin dashboard...</div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-medium text-gray-700">Loading admin dashboard...</p>
+          <p className="text-sm text-gray-400 mt-2">Fetching users, bookings and services</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow p-6 mb-6">
-          <h1 className="text-3xl font-bold text-green-700">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-1">Manage users, providers, services and bookings</p>
+        <div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+              <p className="text-gray-500 mt-1">Manage users, providers, services and bookings</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => fetchDashboardData()}
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
+                aria-label="Refresh dashboard"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
             <h3 className="text-sm text-gray-500">Total Users</h3>
-            <p className="text-2xl font-semibold text-green-700">{stats?.totalUsers ?? 0}</p>
+            <p className="text-2xl font-semibold text-gray-800">{stats?.totalUsers ?? 0}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
             <h3 className="text-sm text-gray-500">Providers</h3>
-            <p className="text-2xl font-semibold text-blue-700">{stats?.providers ?? 0}</p>
+            <p className="text-2xl font-semibold text-indigo-700">{stats?.providers ?? 0}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
             <h3 className="text-sm text-gray-500">Customers</h3>
             <p className="text-2xl font-semibold text-purple-700">{stats?.customers ?? 0}</p>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
             <h3 className="text-sm text-gray-500">Total Bookings</h3>
-            <p className="text-2xl font-semibold text-orange-700">{stats?.bookings ?? 0}</p>
+            <p className="text-2xl font-semibold text-orange-600">{stats?.bookings ?? 0}</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow mb-6">
+        <div className="bg-white rounded-3xl shadow mb-6 overflow-hidden">
           <div className="flex border-b overflow-x-auto">
             {["overview", "users", "providers", "services", "bookings"].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 font-medium capitalize whitespace-nowrap ${
+                className={`px-6 py-3 font-medium capitalize whitespace-nowrap transition-colors ${
                   activeTab === tab
-                    ? "border-b-2 border-green-600 text-green-700"
-                    : "text-gray-600 hover:text-green-600"
+                    ? "border-b-2 border-indigo-600 text-indigo-700"
+                    : "text-gray-600 hover:text-indigo-600"
                 }`}
+                aria-pressed={activeTab === tab}
+                aria-label={`Switch to ${tab} tab`}
               >
                 {tab}
               </button>
@@ -236,6 +187,7 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                     ))}
+                    {bookings.length === 0 && <div className="text-gray-500">No recent bookings available.</div>}
                   </div>
                 </div>
               </div>
@@ -247,29 +199,32 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-semibold mb-3">All Users ({users.length})</h3>
                 <div className="space-y-2">
                   {users.map(u => (
-                    <div key={u.id} className="flex items-center justify-between border p-3 rounded">
+                    <div key={u.id} className="flex items-center justify-between border p-3 rounded-lg">
                       <div className="flex-1">
-                        <div className="font-medium">{u.name}</div>
+                        <div className="font-medium text-gray-800">{u.name}</div>
                         <div className="text-sm text-gray-500">
-                          {u.email} • {u.role} • {u.location || "No location"}
+                          {u.email} • <span className="font-medium">{u.role}</span> • {u.location || "No location"}
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setChatUser({ id: u.id, name: u.name })}
-                          className="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600"
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-pink-600 shadow-sm transition"
+                          aria-label={`Chat with ${u.name}`}
                         >
                           💬 Chat
                         </button>
                         <button
                           onClick={() => deleteUser(u.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                          className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
+                          aria-label={`Delete ${u.name}`}
                         >
                           Delete
                         </button>
                       </div>
                     </div>
                   ))}
+                  {users.length === 0 && <div className="text-gray-500">No users found.</div>}
                 </div>
               </div>
             )}
@@ -280,9 +235,9 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-semibold mb-3">Providers ({providers.length})</h3>
                 <div className="space-y-2">
                   {providers.map(p => (
-                    <div key={p.id} className="flex items-center justify-between border p-3 rounded">
+                    <div key={p.id} className="flex items-center justify-between border p-3 rounded-lg">
                       <div className="flex-1">
-                        <div className="font-medium">{p.name}</div>
+                        <div className="font-medium text-gray-800">{p.name}</div>
                         <div className="text-sm text-gray-500">
                           {p.email} • {p.location || "No location"}
                         </div>
@@ -290,25 +245,29 @@ export default function AdminDashboard() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => setChatUser({ id: p.id, name: p.name })}
-                          className="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600"
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-pink-600 shadow-sm transition"
+                          aria-label={`Chat with ${p.name}`}
                         >
                           💬 Chat
                         </button>
                         <button
                           onClick={() => verifyProvider(p.id)}
-                          className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                          className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg text-sm hover:from-green-600 hover:to-emerald-700 shadow-sm transition"
+                          aria-label={`Verify ${p.name}`}
                         >
                           ✓ Verify
                         </button>
                         <button
                           onClick={() => deleteUser(p.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                          className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
+                          aria-label={`Delete ${p.name}`}
                         >
                           Delete
                         </button>
                       </div>
                     </div>
                   ))}
+                  {providers.length === 0 && <div className="text-gray-500">No providers found.</div>}
                 </div>
               </div>
             )}
@@ -319,21 +278,23 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-semibold mb-3">All Services ({services.length})</h3>
                 <div className="space-y-2">
                   {services.map(s => (
-                    <div key={s.id} className="flex items-center justify-between border p-3 rounded">
+                    <div key={s.id} className="flex items-center justify-between border p-3 rounded-lg">
                       <div className="flex-1">
-                        <div className="font-medium">{s.category} - {s.subcategory}</div>
+                        <div className="font-medium text-gray-800">{s.category} - {s.subcategory}</div>
                         <div className="text-sm text-gray-500">
                           Provider #{s.providerId} • ₹{s.price} • {s.location}
                         </div>
                       </div>
                       <button
                         onClick={() => deleteService(s.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
+                        aria-label={`Delete service ${s.id}`}
                       >
                         Delete
                       </button>
                     </div>
                   ))}
+                  {services.length === 0 && <div className="text-gray-500">No services available.</div>}
                 </div>
               </div>
             )}
@@ -344,10 +305,10 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-semibold mb-3">All Bookings ({bookings.length})</h3>
                 <div className="space-y-2">
                   {bookings.map(b => (
-                    <div key={b.id} className="border p-3 rounded">
+                    <div key={b.id} className="border p-3 rounded-lg bg-white">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <div className="font-medium">Booking #{b.id}</div>
+                          <div className="font-medium text-gray-800">Booking #{b.id}</div>
                           <div className="text-sm text-gray-500">
                             Service #{b.serviceId} • Customer #{b.customerId} • Provider #{b.providerId}
                           </div>
@@ -370,6 +331,7 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   ))}
+                  {bookings.length === 0 && <div className="text-gray-500">No bookings yet.</div>}
                 </div>
               </div>
             )}

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axiosInstance";
@@ -10,6 +11,7 @@ export default function ServiceCard({ service }) {
     notes: ""
   });
   const [message, setMessage] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleBook = async (e) => {
@@ -25,6 +27,7 @@ export default function ServiceCard({ service }) {
     }
 
     try {
+      setSubmitting(true);
       const payload = {
         serviceId: service.id,
         bookingDate: bookingForm.bookingDate,
@@ -33,19 +36,25 @@ export default function ServiceCard({ service }) {
       };
 
       const res = await api.post("/api/bookings", payload);
-      
-      if (res.data.success) {
+
+      if (res.data && (res.data.success || res.status === 200)) {
         setMessage({ type: "success", text: "Booking request sent successfully!" });
         setShowBooking(false);
         setBookingForm({ bookingDate: "", timeSlot: "09:00-10:00", notes: "" });
-        
+
+        // keep existing behavior: navigate after a short delay
         setTimeout(() => {
           navigate("/customer/bookings");
         }, 2000);
+      } else {
+        const errorMsg = (res.data && res.data.error) || "Booking failed. Please try again.";
+        setMessage({ type: "error", text: errorMsg });
       }
     } catch (err) {
       const errorMsg = err.response?.data?.error || "Booking failed. Please try again.";
       setMessage({ type: "error", text: errorMsg });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -56,25 +65,27 @@ export default function ServiceCard({ service }) {
   ];
 
   return (
-    <div className="p-4 border rounded-md hover:shadow-md transition">
+    <article className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
       <div className="flex justify-between items-start">
-        <div className="flex-1">
+        <div className="flex-1 pr-4">
           <div className="flex items-baseline gap-3">
-            <h5 className="font-semibold text-lg">
+            <h5 className="font-semibold text-lg text-gray-800">
               {service.category} {service.subcategory ? `· ${service.subcategory}` : ""}
             </h5>
             <span className="text-sm text-gray-500">
-              by {service.providerName || `Provider #${service.providerId}`}
+              by <span className="font-medium text-gray-700">{service.providerName || `Provider #${service.providerId}`}</span>
             </span>
           </div>
-          <p className="text-gray-700 mt-2">
+
+          <p className="text-gray-700 mt-2 text-sm">
             {service.description ? service.description.substring(0, 140) : "No description"}
             {service.description?.length > 140 && "..."}
           </p>
+
           <div className="text-sm text-gray-500 mt-2 flex items-center gap-4">
             <span>📍 {service.location || "N/A"}</span>
-            {service.distanceKm && (
-              <span className="text-blue-600">🚗 {service.distanceKm.toFixed(1)} km away</span>
+            {service.distanceKm != null && (
+              <span className="text-indigo-700">🚗 {Number(service.distanceKm).toFixed(1)} km away</span>
             )}
           </div>
         </div>
@@ -85,8 +96,10 @@ export default function ServiceCard({ service }) {
           </div>
           <div className="mt-3">
             <button
-              onClick={() => setShowBooking(!showBooking)}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+              onClick={() => setShowBooking((s) => !s)}
+              className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:from-indigo-700 hover:to-blue-700 shadow-sm transition"
+              aria-expanded={showBooking}
+              aria-controls={`booking-form-${service.id}`}
             >
               Book Now
             </button>
@@ -95,29 +108,29 @@ export default function ServiceCard({ service }) {
       </div>
 
       {showBooking && (
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
-          <h6 className="font-semibold mb-3">Book this Service</h6>
-          
-          <form onSubmit={handleBook} className="space-y-3">
+        <section id={`booking-form-${service.id}`} className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100" aria-labelledby={`book-heading-${service.id}`}>
+          <h6 id={`book-heading-${service.id}`} className="font-semibold mb-3 text-gray-800">Book this Service</h6>
+
+          <form onSubmit={handleBook} className="space-y-3" aria-live="polite">
             <div>
-              <label className="block text-sm font-medium mb-1">Date</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Date</label>
               <input
                 type="date"
                 required
                 min={new Date().toISOString().split('T')[0]}
                 value={bookingForm.bookingDate}
                 onChange={(e) => setBookingForm({ ...bookingForm, bookingDate: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Time Slot</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Time Slot</label>
               <select
                 required
                 value={bookingForm.timeSlot}
                 onChange={(e) => setBookingForm({ ...bookingForm, timeSlot: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition"
               >
                 {timeSlots.map(slot => (
                   <option key={slot} value={slot}>{slot}</option>
@@ -126,14 +139,14 @@ export default function ServiceCard({ service }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-gray-700">
                 Additional Notes (optional)
               </label>
               <textarea
                 value={bookingForm.notes}
                 onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
                 placeholder="Describe your requirements..."
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition"
                 rows={3}
               />
             </div>
@@ -141,14 +154,17 @@ export default function ServiceCard({ service }) {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                disabled={submitting}
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-2 rounded-xl font-medium hover:from-indigo-700 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                aria-label={`Confirm booking for service ${service.id}`}
               >
-                Confirm Booking
+                {submitting ? "Sending…" : "Confirm Booking"}
               </button>
+
               <button
                 type="button"
                 onClick={() => setShowBooking(false)}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
+                className="px-4 py-2 border rounded-xl hover:bg-gray-100 transition"
               >
                 Cancel
               </button>
@@ -157,17 +173,18 @@ export default function ServiceCard({ service }) {
 
           {message && (
             <div
-              className={`mt-3 p-2 rounded text-sm ${
+              role="status"
+              className={`mt-3 p-3 rounded text-sm ${
                 message.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
+                  ? "bg-green-50 border border-green-200 text-green-800"
+                  : "bg-red-50 border border-red-200 text-red-800"
               }`}
             >
               {message.text}
             </div>
           )}
-        </div>
+        </section>
       )}
-    </div>
+    </article>
   );
 }

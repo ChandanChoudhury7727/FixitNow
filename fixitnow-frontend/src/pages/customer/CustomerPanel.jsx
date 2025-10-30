@@ -1,140 +1,13 @@
-// import React, { useEffect, useState } from "react";
-// import api from "../../api/axiosInstance";
-// import ServiceCard from "./ServiceCard";
-// import { FaSearch, FaMapMarkerAlt } from "react-icons/fa";
 
-// const CATEGORIES = ["Electrician","Plumber","Carpenter","Cleaning","Appliance"];
-
-// export default function CustomerPanel(){
-//   const [query, setQuery] = useState("");
-//   const [location, setLocation] = useState("");
-//   const [category, setCategory] = useState("");
-//   const [services, setServices] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [sort, setSort] = useState("recent"); // or price_asc
-
-//   const fetchServices = async (params={})=>{
-//     setLoading(true);
-//     try{
-//       // Example: /api/services?category=Plumber&location=Bhubaneswar&q=wire
-//       const res = await api.get("/api/services", { params });
-//       setServices(res.data || []);
-//     }catch(e){
-//       console.error("fetch services", e);
-//       setServices([]);
-//     }finally{ setLoading(false); }
-//   };
-
-//   useEffect(()=> {
-//     fetchServices({}); // initial
-//   }, []);
-
-//   const onSearch = (e) => {
-//     e?.preventDefault?.();
-//     fetchServices({ category: category || undefined, location: location || undefined, q: query || undefined, sort });
-//   };
-
-//   const clearFilters = () => {
-//     setQuery(""); setLocation(""); setCategory(""); setSort("recent");
-//     fetchServices({});
-//   };
-
-//   return (
-//     <div className="mt-6 container mx-auto">
-//       <div className="grid grid-cols-12 gap-6">
-//         {/* Left sidebar */}
-//         <aside className="col-span-12 md:col-span-3 bg-white p-4 rounded-xl shadow">
-//           <h3 className="text-lg font-semibold mb-3">Find a service</h3>
-
-//           <form onSubmit={onSearch} className="space-y-3">
-//             <div className="relative">
-//               <FaSearch className="absolute left-3 top-3 text-gray-400" />
-//               <input
-//                 value={query}
-//                 onChange={e=>setQuery(e.target.value)}
-//                 placeholder="What service do you need?"
-//                 className="pl-10 w-full border rounded-md px-3 py-2"
-//               />
-//             </div>
-
-//             <div className="relative">
-//               <FaMapMarkerAlt className="absolute left-3 top-3 text-gray-400" />
-//               <input
-//                 value={location}
-//                 onChange={e=>setLocation(e.target.value)}
-//                 placeholder="Location (city / area)"
-//                 className="pl-10 w-full border rounded-md px-3 py-2"
-//               />
-//             </div>
-
-//             <div>
-//               <label className="text-sm font-medium">Category</label>
-//               <div className="flex flex-wrap gap-2 mt-2">
-//                 {CATEGORIES.map(c => (
-//                   <button
-//                     type="button"
-//                     key={c}
-//                     onClick={() => setCategory(c === category ? "" : c)}
-//                     className={`px-3 py-1 rounded-full text-sm border ${category===c ? 'bg-green-600 text-white' : 'bg-gray-50 text-gray-700'}`}
-//                   >
-//                     {c}
-//                   </button>
-//                 ))}
-//               </div>
-//             </div>
-
-//             <div>
-//               <label className="text-sm font-medium">Sort</label>
-//               <select value={sort} onChange={e=>setSort(e.target.value)} className="w-full border rounded-md px-3 py-2">
-//                 <option value="recent">Most recent</option>
-//                 <option value="price_asc">Price: low to high</option>
-//                 <option value="price_desc">Price: high to low</option>
-//               </select>
-//             </div>
-
-//             <div className="flex gap-2">
-//               <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded">Search</button>
-//               <button type="button" onClick={clearFilters} className="px-3 py-2 border rounded">Clear</button>
-//             </div>
-//           </form>
-//         </aside>
-
-//         {/* Main content */}
-//         <main className="col-span-12 md:col-span-9">
-//           {/* Map placeholder */}
-//           <div className="bg-white rounded-xl shadow p-4 mb-6">
-//             <div className="h-48 bg-gray-100 rounded flex items-center justify-center text-gray-500">Map placeholder (integrate later)</div>
-//           </div>
-
-//           {/* Results */}
-//           <div className="bg-white rounded-xl shadow p-4">
-//             <div className="flex items-center justify-between mb-4">
-//               <h4 className="text-lg font-semibold">Services</h4>
-//               <div className="text-sm text-gray-500">{loading ? "Loading..." : `${services.length} found`}</div>
-//             </div>
-
-//             {services.length === 0 && !loading ? (
-//               <div className="text-center text-gray-500 py-8">No services found. Try clearing filters.</div>
-//             ) : (
-//               <div className="grid gap-4">
-//                 {services.map(s => <ServiceCard key={s.id} service={s} />)}
-//               </div>
-//             )}
-//           </div>
-//         </main>
-//       </div>
-//     </div>
-//   );
-// }
-
+// src/pages/customer/CustomerPanel.jsx
 import React, { useEffect, useState } from "react";
 import api from "../../api/axiosInstance";
 import ServiceCard from "./ServiceCard";
-import { FaSearch, FaMapMarkerAlt } from "react-icons/fa";
+import { FaSearch, FaMapMarkerAlt, FaSyncAlt } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 
-const CATEGORIES = ["Electrician","Plumber","Carpenter","Cleaning","Appliance"];
+const CATEGORIES = ["Electrician", "Plumber", "Carpenter", "Cleaning", "Appliance"];
 
 // custom red pin icon
 const redIcon = new L.Icon({
@@ -165,6 +38,7 @@ export default function CustomerPanel() {
   const [loading, setLoading] = useState(false);
   const [sort, setSort] = useState("recent");
   const [hoveredCoords, setHoveredCoords] = useState(null);
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
   const fetchServices = async (params = {}) => {
     setLoading(true);
@@ -172,6 +46,7 @@ export default function CustomerPanel() {
       // /api/services?category=&location=&q=
       const res = await api.get("/api/services", { params });
       setServices(res.data || []);
+      setLastFetchedAt(new Date());
     } catch (e) {
       console.error("fetch services", e);
       setServices([]);
@@ -226,19 +101,38 @@ export default function CustomerPanel() {
   }));
 
   return (
-    <div className="mt-6 container mx-auto">
+    <div className="mt-6 container mx-auto px-4">
       <div className="grid grid-cols-12 gap-6">
         {/* Sidebar */}
-        <aside className="col-span-12 md:col-span-3 bg-white p-4 rounded-xl shadow">
-          <h3 className="text-lg font-semibold mb-3">Find a service</h3>
-          <form onSubmit={onSearch} className="space-y-3">
+        <aside className="col-span-12 md:col-span-3 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Find a service</h3>
+            <button
+              onClick={() =>
+                fetchServices({
+                  category: category || undefined,
+                  location: location || undefined,
+                  q: query || undefined,
+                  sort,
+                })
+              }
+              aria-label="Refresh services"
+              className="text-sm text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-50 transition"
+              title="Refresh"
+            >
+              <FaSyncAlt />
+            </button>
+          </div>
+
+          <form onSubmit={onSearch} className="space-y-4" role="search" aria-label="Service search">
             <div className="relative">
               <FaSearch className="absolute left-3 top-3 text-gray-400" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="What service do you need?"
-                className="pl-10 w-full border rounded-md px-3 py-2"
+                className="pl-10 w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition"
+                aria-label="Service query"
               />
             </div>
 
@@ -248,23 +142,24 @@ export default function CustomerPanel() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Location (city / area)"
-                className="pl-10 w-full border rounded-md px-3 py-2"
+                className="pl-10 w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition"
+                aria-label="Location"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">Category</label>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <label className="text-sm font-medium block mb-2">Category</label>
+              <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((c) => (
                   <button
                     type="button"
                     key={c}
                     onClick={() => setCategory(c === category ? "" : c)}
-                    className={`px-3 py-1 rounded-full text-sm border ${
-                      category === c
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-50 text-gray-700"
+                    className={`px-3 py-1 rounded-full text-sm border transition ${
+                      category === c ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white border-transparent" : "bg-gray-50 text-gray-700 border-gray-200"
                     }`}
+                    aria-pressed={category === c}
+                    aria-label={`Filter by ${c}`}
                   >
                     {c}
                   </button>
@@ -273,11 +168,12 @@ export default function CustomerPanel() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Sort</label>
+              <label className="text-sm font-medium block mb-2">Sort</label>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="w-full border rounded-md px-3 py-2"
+                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition"
+                aria-label="Sort services"
               >
                 <option value="recent">Most recent</option>
                 <option value="price_asc">Price: low to high</option>
@@ -288,29 +184,37 @@ export default function CustomerPanel() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 rounded"
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-2 rounded-xl font-medium hover:from-indigo-700 hover:to-blue-700 transition"
+                aria-label="Search services"
               >
                 Search
               </button>
               <button
                 type="button"
                 onClick={clearFilters}
-                className="px-3 py-2 border rounded"
+                className="px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition"
+                aria-label="Clear filters"
               >
                 Clear
               </button>
+            </div>
+
+            <div className="text-xs text-gray-500 pt-2">
+              <div>{loading ? "Loading..." : `${services.length} result${services.length !== 1 ? "s" : ""}`}</div>
+              {lastFetchedAt && <div className="mt-1">Last updated: {lastFetchedAt.toLocaleTimeString()}</div>}
             </div>
           </form>
         </aside>
 
         {/* Main content */}
-        <main className="col-span-12 md:col-span-9">
+        <main className="col-span-12 md:col-span-9 space-y-6">
           {/* Map */}
-          <div className="bg-white rounded-xl shadow mb-6 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-md mb-2 overflow-hidden border border-gray-100">
             <MapContainer
               center={[20.2961, 85.8245]} // default center: Bhubaneswar
               zoom={11}
               style={{ height: "350px", width: "100%" }}
+              aria-label="Services map"
             >
               <TileLayer
                 attribution='&copy; OpenStreetMap contributors'
@@ -323,8 +227,8 @@ export default function CustomerPanel() {
                 <Marker key={s.id} position={s.coords} icon={redIcon}>
                   <Popup>
                     <div className="font-semibold">{s.category}</div>
-                    <div>{s.subcategory}</div>
-                    <div className="text-sm text-gray-600">{s.location}</div>
+                    <div className="text-sm text-gray-600">{s.subcategory}</div>
+                    <div className="text-sm text-gray-500 mt-1">{s.location}</div>
                   </Popup>
                 </Marker>
               ))}
@@ -332,15 +236,21 @@ export default function CustomerPanel() {
           </div>
 
           {/* Results list */}
-          <div className="bg-white rounded-xl shadow p-4">
+          <section className="bg-white rounded-2xl shadow-md p-4 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold">Services</h4>
+              <h4 className="text-lg font-semibold text-gray-800">Services</h4>
               <div className="text-sm text-gray-500">
                 {loading ? "Loading..." : `${services.length} found`}
               </div>
             </div>
 
-            {services.length === 0 && !loading ? (
+            {loading && (
+              <div className="min-h-[120px] flex items-center justify-center">
+                <div className="text-gray-600">Loading services…</div>
+              </div>
+            )}
+
+            {!loading && services.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 No services found. Try clearing filters.
               </div>
@@ -357,7 +267,7 @@ export default function CustomerPanel() {
                 ))}
               </div>
             )}
-          </div>
+          </section>
         </main>
       </div>
     </div>
