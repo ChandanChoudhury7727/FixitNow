@@ -1,5 +1,357 @@
 
 
+// import React, { useEffect, useState } from "react";
+// import api from "../api/axiosInstance";
+// import ChatWindow from "../components/ChatWindow";
+
+// export default function AdminDashboard() {
+//   const [activeTab, setActiveTab] = useState("overview");
+//   const [stats, setStats] = useState(null);
+//   const [users, setUsers] = useState([]);
+//   const [providers, setProviders] = useState([]);
+//   const [customers, setCustomers] = useState([]);
+//   const [bookings, setBookings] = useState([]);
+//   const [services, setServices] = useState([]);
+//   const [reports, setReports] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [chatUser, setChatUser] = useState(null);
+
+//   useEffect(() => {
+//     fetchDashboardData();
+//   }, []);
+
+//   const fetchDashboardData = async () => {
+//     setLoading(true);
+//     try {
+//       // Fetch all users
+//       const usersRes = await api.get("/api/admin/users");
+//       const allUsers = usersRes.data || [];
+//       setUsers(allUsers);
+
+//       // Filter by role
+//       setProviders(allUsers.filter(u => u.role === "PROVIDER"));
+//       setCustomers(allUsers.filter(u => u.role === "CUSTOMER"));
+
+//       // Fetch bookings
+//       const bookingsRes = await api.get("/api/admin/bookings");
+//       setBookings(bookingsRes.data || []);
+
+//       // Fetch services
+//       const servicesRes = await api.get("/api/admin/services");
+//       setServices(servicesRes.data || []);
+
+//       // Calculate stats
+//       setStats({
+//         totalUsers: allUsers.length,
+//         providers: allUsers.filter(u => u.role === "PROVIDER").length,
+//         customers: allUsers.filter(u => u.role === "CUSTOMER").length,
+//         bookings: bookingsRes.data?.length || 0,
+//         services: servicesRes.data?.length || 0,
+//         pendingBookings: bookingsRes.data?.filter(b => b.status === "PENDING").length || 0
+//       });
+//     } catch (e) {
+//       console.error("Failed to fetch admin data", e);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const deleteUser = async (userId) => {
+//     if (!window.confirm("Are you sure you want to delete this user?")) return;
+//     try {
+//       await api.delete(`/api/admin/users/${userId}`);
+//       alert("User deleted successfully");
+//       fetchDashboardData();
+//     } catch (err) {
+//       alert(err.response?.data?.error || "Failed to delete user");
+//     }
+//   };
+
+//   const verifyProvider = async (providerId) => {
+//     try {
+//       await api.post(`/api/admin/providers/${providerId}/verify`);
+//       alert("Provider verified successfully");
+//       fetchDashboardData();
+//     } catch (err) {
+//       alert(err.response?.data?.error || "Failed to verify provider");
+//     }
+//   };
+
+//   const deleteService = async (serviceId) => {
+//     if (!window.confirm("Delete this service?")) return;
+//     try {
+//       await api.delete(`/api/admin/services/${serviceId}`);
+//       alert("Service deleted");
+//       fetchDashboardData();
+//     } catch (err) {
+//       alert("Failed to delete service");
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+//         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
+//           <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+//           <p className="text-lg font-medium text-gray-700">Loading admin dashboard...</p>
+//           <p className="text-sm text-gray-400 mt-2">Fetching users, bookings and services</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10">
+//       <div className="max-w-7xl mx-auto px-6">
+//         {/* Header */}
+//         <div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
+//           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+//             <div>
+//               <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+//               <p className="text-gray-500 mt-1">Manage users, providers, services and bookings</p>
+//             </div>
+//             <div className="flex items-center gap-3">
+//               <button
+//                 onClick={() => fetchDashboardData()}
+//                 className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
+//                 aria-label="Refresh dashboard"
+//               >
+//                 Refresh
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Stats Cards */}
+//         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+//           <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
+//             <h3 className="text-sm text-gray-500">Total Users</h3>
+//             <p className="text-2xl font-semibold text-gray-800">{stats?.totalUsers ?? 0}</p>
+//           </div>
+//           <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
+//             <h3 className="text-sm text-gray-500">Providers</h3>
+//             <p className="text-2xl font-semibold text-indigo-700">{stats?.providers ?? 0}</p>
+//           </div>
+//           <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
+//             <h3 className="text-sm text-gray-500">Customers</h3>
+//             <p className="text-2xl font-semibold text-purple-700">{stats?.customers ?? 0}</p>
+//           </div>
+//           <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
+//             <h3 className="text-sm text-gray-500">Total Bookings</h3>
+//             <p className="text-2xl font-semibold text-orange-600">{stats?.bookings ?? 0}</p>
+//           </div>
+//         </div>
+
+//         {/* Tabs */}
+//         <div className="bg-white rounded-3xl shadow mb-6 overflow-hidden">
+//           <div className="flex border-b overflow-x-auto">
+//             {["overview", "users", "providers", "services", "bookings"].map(tab => (
+//               <button
+//                 key={tab}
+//                 onClick={() => setActiveTab(tab)}
+//                 className={`px-6 py-3 font-medium capitalize whitespace-nowrap transition-colors ${
+//                   activeTab === tab
+//                     ? "border-b-2 border-indigo-600 text-indigo-700"
+//                     : "text-gray-600 hover:text-indigo-600"
+//                 }`}
+//                 aria-pressed={activeTab === tab}
+//                 aria-label={`Switch to ${tab} tab`}
+//               >
+//                 {tab}
+//               </button>
+//             ))}
+//           </div>
+
+//           <div className="p-6">
+//             {/* Overview Tab */}
+//             {activeTab === "overview" && (
+//               <div className="space-y-6">
+//                 <div>
+//                   <h3 className="text-lg font-semibold mb-3">Recent Activity</h3>
+//                   <div className="space-y-2">
+//                     {bookings.slice(0, 5).map(b => (
+//                       <div key={b.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+//                         <div>
+//                           <div className="font-medium">Booking #{b.id}</div>
+//                           <div className="text-sm text-gray-500">
+//                             Service #{b.serviceId} • Customer #{b.customerId} • Provider #{b.providerId}
+//                           </div>
+//                         </div>
+//                         <span className={`px-2 py-1 rounded text-xs ${
+//                           b.status === "COMPLETED" ? "bg-green-100 text-green-800" :
+//                           b.status === "CONFIRMED" ? "bg-blue-100 text-blue-800" :
+//                           b.status === "PENDING" ? "bg-yellow-100 text-yellow-800" :
+//                           "bg-red-100 text-red-800"
+//                         }`}>
+//                           {b.status}
+//                         </span>
+//                       </div>
+//                     ))}
+//                     {bookings.length === 0 && <div className="text-gray-500">No recent bookings available.</div>}
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+
+//             {/* Users Tab */}
+//             {activeTab === "users" && (
+//               <div>
+//                 <h3 className="text-lg font-semibold mb-3">All Users ({users.length})</h3>
+//                 <div className="space-y-2">
+//                   {users.map(u => (
+//                     <div key={u.id} className="flex items-center justify-between border p-3 rounded-lg">
+//                       <div className="flex-1">
+//                         <div className="font-medium text-gray-800">{u.name}</div>
+//                         <div className="text-sm text-gray-500">
+//                           {u.email} • <span className="font-medium">{u.role}</span> • {u.location || "No location"}
+//                         </div>
+//                       </div>
+//                       <div className="flex gap-2">
+//                         <button
+//                           onClick={() => setChatUser({ id: u.id, name: u.name })}
+//                           className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-pink-600 shadow-sm transition"
+//                           aria-label={`Chat with ${u.name}`}
+//                         >
+//                           💬 Chat
+//                         </button>
+//                         <button
+//                           onClick={() => deleteUser(u.id)}
+//                           className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
+//                           aria-label={`Delete ${u.name}`}
+//                         >
+//                           Delete
+//                         </button>
+//                       </div>
+//                     </div>
+//                   ))}
+//                   {users.length === 0 && <div className="text-gray-500">No users found.</div>}
+//                 </div>
+//               </div>
+//             )}
+
+//             {/* Providers Tab */}
+//             {activeTab === "providers" && (
+//               <div>
+//                 <h3 className="text-lg font-semibold mb-3">Providers ({providers.length})</h3>
+//                 <div className="space-y-2">
+//                   {providers.map(p => (
+//                     <div key={p.id} className="flex items-center justify-between border p-3 rounded-lg">
+//                       <div className="flex-1">
+//                         <div className="font-medium text-gray-800">{p.name}</div>
+//                         <div className="text-sm text-gray-500">
+//                           {p.email} • {p.location || "No location"}
+//                         </div>
+//                       </div>
+//                       <div className="flex gap-2">
+//                         <button
+//                           onClick={() => setChatUser({ id: p.id, name: p.name })}
+//                           className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-pink-600 shadow-sm transition"
+//                           aria-label={`Chat with ${p.name}`}
+//                         >
+//                           💬 Chat
+//                         </button>
+//                         <button
+//                           onClick={() => verifyProvider(p.id)}
+//                           className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg text-sm hover:from-green-600 hover:to-emerald-700 shadow-sm transition"
+//                           aria-label={`Verify ${p.name}`}
+//                         >
+//                           ✓ Verify
+//                         </button>
+//                         <button
+//                           onClick={() => deleteUser(p.id)}
+//                           className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
+//                           aria-label={`Delete ${p.name}`}
+//                         >
+//                           Delete
+//                         </button>
+//                       </div>
+//                     </div>
+//                   ))}
+//                   {providers.length === 0 && <div className="text-gray-500">No providers found.</div>}
+//                 </div>
+//               </div>
+//             )}
+
+//             {/* Services Tab */}
+//             {activeTab === "services" && (
+//               <div>
+//                 <h3 className="text-lg font-semibold mb-3">All Services ({services.length})</h3>
+//                 <div className="space-y-2">
+//                   {services.map(s => (
+//                     <div key={s.id} className="flex items-center justify-between border p-3 rounded-lg">
+//                       <div className="flex-1">
+//                         <div className="font-medium text-gray-800">{s.category} - {s.subcategory}</div>
+//                         <div className="text-sm text-gray-500">
+//                           Provider #{s.providerId} • ₹{s.price} • {s.location}
+//                         </div>
+//                       </div>
+//                       <button
+//                         onClick={() => deleteService(s.id)}
+//                         className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
+//                         aria-label={`Delete service ${s.id}`}
+//                       >
+//                         Delete
+//                       </button>
+//                     </div>
+//                   ))}
+//                   {services.length === 0 && <div className="text-gray-500">No services available.</div>}
+//                 </div>
+//               </div>
+//             )}
+
+//             {/* Bookings Tab */}
+//             {activeTab === "bookings" && (
+//               <div>
+//                 <h3 className="text-lg font-semibold mb-3">All Bookings ({bookings.length})</h3>
+//                 <div className="space-y-2">
+//                   {bookings.map(b => (
+//                     <div key={b.id} className="border p-3 rounded-lg bg-white">
+//                       <div className="flex justify-between items-start mb-2">
+//                         <div>
+//                           <div className="font-medium text-gray-800">Booking #{b.id}</div>
+//                           <div className="text-sm text-gray-500">
+//                             Service #{b.serviceId} • Customer #{b.customerId} • Provider #{b.providerId}
+//                           </div>
+//                         </div>
+//                         <span className={`px-2 py-1 rounded text-xs ${
+//                           b.status === "COMPLETED" ? "bg-green-100 text-green-800" :
+//                           b.status === "CONFIRMED" ? "bg-blue-100 text-blue-800" :
+//                           b.status === "PENDING" ? "bg-yellow-100 text-yellow-800" :
+//                           "bg-red-100 text-red-800"
+//                         }`}>
+//                           {b.status}
+//                         </span>
+//                       </div>
+//                       <div className="text-sm text-gray-600">
+//                         Date: {b.bookingDate ? new Date(b.bookingDate).toLocaleDateString() : "N/A"} • 
+//                         Time: {b.timeSlot || "N/A"}
+//                       </div>
+//                       {b.notes && (
+//                         <div className="text-sm text-gray-500 mt-1">Notes: {b.notes}</div>
+//                       )}
+//                     </div>
+//                   ))}
+//                   {bookings.length === 0 && <div className="text-gray-500">No bookings yet.</div>}
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Chat Window */}
+//       {chatUser && (
+//         <ChatWindow
+//           receiverId={chatUser.id}
+//           receiverName={chatUser.name}
+//           onClose={() => setChatUser(null)}
+//         />
+//       )}
+//     </div>
+//   );
+// }
+
+
 import React, { useEffect, useState } from "react";
 import api from "../api/axiosInstance";
 import ChatWindow from "../components/ChatWindow";
@@ -12,7 +364,7 @@ export default function AdminDashboard() {
   const [customers, setCustomers] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [services, setServices] = useState([]);
-  const [reports, setReports] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [chatUser, setChatUser] = useState(null);
 
@@ -39,6 +391,10 @@ export default function AdminDashboard() {
       // Fetch services
       const servicesRes = await api.get("/api/admin/services");
       setServices(servicesRes.data || []);
+
+      // Fetch analytics
+      const analyticsRes = await api.get("/api/admin/analytics");
+      setAnalytics(analyticsRes.data || {});
 
       // Calculate stats
       setStats({
@@ -94,7 +450,6 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
           <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-lg font-medium text-gray-700">Loading admin dashboard...</p>
-          <p className="text-sm text-gray-400 mt-2">Fetching users, bookings and services</p>
         </div>
       </div>
     );
@@ -108,17 +463,14 @@ export default function AdminDashboard() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-              <p className="text-gray-500 mt-1">Manage users, providers, services and bookings</p>
+              <p className="text-gray-500 mt-1">Manage platform operations and analytics</p>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => fetchDashboardData()}
-                className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
-                aria-label="Refresh dashboard"
-              >
-                Refresh
-              </button>
-            </div>
+            <button
+              onClick={() => fetchDashboardData()}
+              className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 shadow-md hover:shadow-lg transition"
+            >
+              🔄 Refresh
+            </button>
           </div>
         </div>
 
@@ -129,23 +481,25 @@ export default function AdminDashboard() {
             <p className="text-2xl font-semibold text-gray-800">{stats?.totalUsers ?? 0}</p>
           </div>
           <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
-            <h3 className="text-sm text-gray-500">Providers</h3>
-            <p className="text-2xl font-semibold text-indigo-700">{stats?.providers ?? 0}</p>
-          </div>
-          <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
-            <h3 className="text-sm text-gray-500">Customers</h3>
-            <p className="text-2xl font-semibold text-purple-700">{stats?.customers ?? 0}</p>
+            <h3 className="text-sm text-gray-500">Total Services</h3>
+            <p className="text-2xl font-semibold text-indigo-700">{stats?.services ?? 0}</p>
           </div>
           <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
             <h3 className="text-sm text-gray-500">Total Bookings</h3>
-            <p className="text-2xl font-semibold text-orange-600">{stats?.bookings ?? 0}</p>
+            <p className="text-2xl font-semibold text-purple-700">{stats?.bookings ?? 0}</p>
+          </div>
+          <div className="bg-white rounded-2xl shadow p-4 border border-gray-100">
+            <h3 className="text-sm text-gray-500">Revenue (₹)</h3>
+            <p className="text-2xl font-semibold text-orange-600">
+              {analytics?.totalRevenue ? analytics.totalRevenue.toFixed(2) : '0'}
+            </p>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="bg-white rounded-3xl shadow mb-6 overflow-hidden">
           <div className="flex border-b overflow-x-auto">
-            {["overview", "users", "providers", "services", "bookings"].map(tab => (
+            {["overview", "analytics", "users", "providers", "services", "bookings"].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -154,8 +508,6 @@ export default function AdminDashboard() {
                     ? "border-b-2 border-indigo-600 text-indigo-700"
                     : "text-gray-600 hover:text-indigo-600"
                 }`}
-                aria-pressed={activeTab === tab}
-                aria-label={`Switch to ${tab} tab`}
               >
                 {tab}
               </button>
@@ -166,15 +518,27 @@ export default function AdminDashboard() {
             {/* Overview Tab */}
             {activeTab === "overview" && (
               <div className="space-y-6">
+                <h3 className="text-lg font-semibold mb-3">Platform Overview</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
+                    <div className="text-sm text-gray-600">Completed Bookings</div>
+                    <div className="text-2xl font-bold text-green-700">{analytics?.completedBookings || 0}</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-4 rounded-xl border border-yellow-100">
+                    <div className="text-sm text-gray-600">Pending Bookings</div>
+                    <div className="text-2xl font-bold text-orange-700">{stats?.pendingBookings || 0}</div>
+                  </div>
+                </div>
+
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Recent Activity</h3>
+                  <h4 className="font-semibold mb-3">Recent Activity</h4>
                   <div className="space-y-2">
                     {bookings.slice(0, 5).map(b => (
                       <div key={b.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                         <div>
                           <div className="font-medium">Booking #{b.id}</div>
                           <div className="text-sm text-gray-500">
-                            Service #{b.serviceId} • Customer #{b.customerId} • Provider #{b.providerId}
+                            Service #{b.serviceId} • Customer #{b.customerId}
                           </div>
                         </div>
                         <span className={`px-2 py-1 rounded text-xs ${
@@ -187,7 +551,88 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                     ))}
-                    {bookings.length === 0 && <div className="text-gray-500">No recent bookings available.</div>}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Analytics Tab */}
+            {activeTab === "analytics" && analytics && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold mb-4">Platform Analytics</h3>
+
+                {/* Top Services */}
+                <div className="bg-white border rounded-xl p-4">
+                  <h4 className="font-semibold mb-3">📊 Most Booked Services</h4>
+                  <div className="space-y-2">
+                    {analytics.topServices?.slice(0, 5).map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-bold text-indigo-600">#{idx + 1}</span>
+                          <div>
+                            <div className="font-medium">{item.category} - {item.subcategory}</div>
+                            <div className="text-sm text-gray-500">{item.location}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-indigo-700">{item.bookingCount}</div>
+                          <div className="text-xs text-gray-500">bookings</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Providers */}
+                <div className="bg-white border rounded-xl p-4">
+                  <h4 className="font-semibold mb-3">⭐ Top Rated Providers</h4>
+                  <div className="space-y-2">
+                    {analytics.topProviders?.slice(0, 5).map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-bold text-green-600">#{idx + 1}</span>
+                          <div>
+                            <div className="font-medium">{item.name}</div>
+                            <div className="text-sm text-gray-500">{item.email}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-green-700">{item.completedBookings}</div>
+                          <div className="text-xs text-gray-500">
+                            {item.avgRating ? `⭐ ${item.avgRating.toFixed(1)}` : 'No rating'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location Trends */}
+                <div className="bg-white border rounded-xl p-4">
+                  <h4 className="font-semibold mb-3">📍 Service Distribution by Location</h4>
+                  <div className="space-y-2">
+                    {analytics.locationTrends?.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="font-medium">{item.location}</div>
+                        <div>
+                          <span className="font-semibold text-purple-700">{item.serviceCount}</span>
+                          <span className="text-sm text-gray-500 ml-1">services</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status Distribution */}
+                <div className="bg-white border rounded-xl p-4">
+                  <h4 className="font-semibold mb-3">📈 Booking Status Distribution</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {Object.entries(analytics.statusDistribution || {}).map(([status, count]) => (
+                      <div key={status} className="p-3 bg-gray-50 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-gray-800">{count}</div>
+                        <div className="text-xs text-gray-600 mt-1">{status}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -203,28 +648,25 @@ export default function AdminDashboard() {
                       <div className="flex-1">
                         <div className="font-medium text-gray-800">{u.name}</div>
                         <div className="text-sm text-gray-500">
-                          {u.email} • <span className="font-medium">{u.role}</span> • {u.location || "No location"}
+                          {u.email} • <span className="font-medium">{u.role}</span>
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setChatUser({ id: u.id, name: u.name })}
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-pink-600 shadow-sm transition"
-                          aria-label={`Chat with ${u.name}`}
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-pink-600"
                         >
                           💬 Chat
                         </button>
                         <button
                           onClick={() => deleteUser(u.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
-                          aria-label={`Delete ${u.name}`}
+                          className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600"
                         >
                           Delete
                         </button>
                       </div>
                     </div>
                   ))}
-                  {users.length === 0 && <div className="text-gray-500">No users found.</div>}
                 </div>
               </div>
             )}
@@ -238,36 +680,30 @@ export default function AdminDashboard() {
                     <div key={p.id} className="flex items-center justify-between border p-3 rounded-lg">
                       <div className="flex-1">
                         <div className="font-medium text-gray-800">{p.name}</div>
-                        <div className="text-sm text-gray-500">
-                          {p.email} • {p.location || "No location"}
-                        </div>
+                        <div className="text-sm text-gray-500">{p.email}</div>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setChatUser({ id: p.id, name: p.name })}
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm hover:from-purple-600 hover:to-pink-600 shadow-sm transition"
-                          aria-label={`Chat with ${p.name}`}
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm"
                         >
-                          💬 Chat
+                          💬
                         </button>
                         <button
                           onClick={() => verifyProvider(p.id)}
-                          className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg text-sm hover:from-green-600 hover:to-emerald-700 shadow-sm transition"
-                          aria-label={`Verify ${p.name}`}
+                          className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg text-sm"
                         >
                           ✓ Verify
                         </button>
                         <button
                           onClick={() => deleteUser(p.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
-                          aria-label={`Delete ${p.name}`}
+                          className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
                         >
                           Delete
                         </button>
                       </div>
                     </div>
                   ))}
-                  {providers.length === 0 && <div className="text-gray-500">No providers found.</div>}
                 </div>
               </div>
             )}
@@ -287,14 +723,12 @@ export default function AdminDashboard() {
                       </div>
                       <button
                         onClick={() => deleteService(s.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 shadow-sm transition"
-                        aria-label={`Delete service ${s.id}`}
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
                       >
                         Delete
                       </button>
                     </div>
                   ))}
-                  {services.length === 0 && <div className="text-gray-500">No services available.</div>}
                 </div>
               </div>
             )}
@@ -305,12 +739,12 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-semibold mb-3">All Bookings ({bookings.length})</h3>
                 <div className="space-y-2">
                   {bookings.map(b => (
-                    <div key={b.id} className="border p-3 rounded-lg bg-white">
+                    <div key={b.id} className="border p-3 rounded-lg">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <div className="font-medium text-gray-800">Booking #{b.id}</div>
+                          <div className="font-medium">Booking #{b.id}</div>
                           <div className="text-sm text-gray-500">
-                            Service #{b.serviceId} • Customer #{b.customerId} • Provider #{b.providerId}
+                            Service #{b.serviceId} • Customer #{b.customerId}
                           </div>
                         </div>
                         <span className={`px-2 py-1 rounded text-xs ${
@@ -323,15 +757,10 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                       <div className="text-sm text-gray-600">
-                        Date: {b.bookingDate ? new Date(b.bookingDate).toLocaleDateString() : "N/A"} • 
-                        Time: {b.timeSlot || "N/A"}
+                        {b.bookingDate ? new Date(b.bookingDate).toLocaleDateString() : "N/A"} • {b.timeSlot || "N/A"}
                       </div>
-                      {b.notes && (
-                        <div className="text-sm text-gray-500 mt-1">Notes: {b.notes}</div>
-                      )}
                     </div>
                   ))}
-                  {bookings.length === 0 && <div className="text-gray-500">No bookings yet.</div>}
                 </div>
               </div>
             )}
@@ -339,7 +768,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Chat Window */}
       {chatUser && (
         <ChatWindow
           receiverId={chatUser.id}
