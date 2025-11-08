@@ -11,6 +11,7 @@ public class ProviderProfileRequest {
     private List<String> categories;
     private String description;
     private String location;
+    private String verificationDocumentUrl;
 
     public ProviderProfileRequest() {}
 
@@ -22,6 +23,9 @@ public class ProviderProfileRequest {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public String getVerificationDocumentUrl() { return verificationDocumentUrl; }
+    public void setVerificationDocumentUrl(String verificationDocumentUrl) { this.verificationDocumentUrl = verificationDocumentUrl; }
 
     // Convert to a JSON string for DB storage (uses Jackson under the hood)
     public String getCategoriesJson() {
