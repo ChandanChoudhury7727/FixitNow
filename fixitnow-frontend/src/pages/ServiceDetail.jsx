@@ -51,7 +51,14 @@ export default function ServiceDetail(){
   return (
     <div className="p-4 max-w-3xl">
       <h2 className="text-2xl font-bold mb-2">{service.category} — {service.subcategory}</h2>
-      <div className="mb-4">Provider: {service.providerName} ({service.providerEmail})</div>
+      <div className="mb-4 flex items-center gap-2">
+        <span>Provider: {service.providerName} ({service.providerEmail})</span>
+        {service.providerVerified && (
+          <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+            ✓ Verified Provider
+          </span>
+        )}
+      </div>
       <div className="mb-4">Price: {service.price}</div>
       <div className="mb-4">Location: {service.location} {service.latitude && service.longitude ? `(${service.latitude}, ${service.longitude})` : ''}</div>
       <div className="mb-4">Description: <div className="border p-2 rounded">{service.description}</div></div>

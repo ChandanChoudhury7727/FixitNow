@@ -365,6 +365,8 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [services, setServices] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [verificationProfiles, setVerificationProfiles] = useState([]);
+  const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [chatUser, setChatUser] = useState(null);
 
@@ -396,6 +398,22 @@ export default function AdminDashboard() {
       const analyticsRes = await api.get("/api/admin/analytics");
       setAnalytics(analyticsRes.data || {});
 
+      // Fetch verification profiles
+      try {
+        const verificationRes = await api.get("/api/admin/providers/verification");
+        setVerificationProfiles(verificationRes.data || []);
+      } catch (e) {
+        console.error("Failed to fetch verification profiles", e);
+      }
+
+      // Fetch disputes
+      try {
+        const disputesRes = await api.get("/api/disputes/admin/all");
+        setDisputes(disputesRes.data || []);
+      } catch (e) {
+        console.error("Failed to fetch disputes", e);
+      }
+
       // Calculate stats
       setStats({
         totalUsers: allUsers.length,
@@ -423,15 +441,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const verifyProvider = async (providerId) => {
-    try {
-      await api.post(`/api/admin/providers/${providerId}/verify`);
-      alert("Provider verified successfully");
-      fetchDashboardData();
-    } catch (err) {
-      alert(err.response?.data?.error || "Failed to verify provider");
-    }
-  };
 
   const deleteService = async (serviceId) => {
     if (!window.confirm("Delete this service?")) return;
@@ -441,6 +450,40 @@ export default function AdminDashboard() {
       fetchDashboardData();
     } catch (err) {
       alert("Failed to delete service");
+    }
+  };
+
+  const makeAdmin = async (userId) => {
+    if (!window.confirm("Promote this user to admin? This action cannot be undone.")) return;
+    try {
+      await api.post(`/api/admin/users/${userId}/make-admin`);
+      alert("User promoted to admin successfully");
+      fetchDashboardData();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to promote user");
+    }
+  };
+
+  const handleVerification = async (providerId, action) => {
+    const notes = prompt(`Enter notes for ${action.toLowerCase()}:`);
+    if (notes === null) return; // User cancelled
+    
+    try {
+      await api.post(`/api/admin/providers/${providerId}/verify`, { action, notes });
+      alert(`Provider ${action.toLowerCase()} successfully`);
+      fetchDashboardData();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to update verification");
+    }
+  };
+
+  const updateDispute = async (disputeId, updates) => {
+    try {
+      await api.patch(`/api/disputes/admin/${disputeId}`, updates);
+      alert("Dispute updated successfully");
+      fetchDashboardData();
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to update dispute");
     }
   };
 
@@ -499,7 +542,7 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="bg-white rounded-3xl shadow mb-6 overflow-hidden">
           <div className="flex border-b overflow-x-auto">
-            {["overview", "analytics", "users", "providers", "services", "bookings"].map(tab => (
+            {["overview", "analytics", "users", "providers", "verification", "services", "bookings", "disputes"].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -658,6 +701,14 @@ export default function AdminDashboard() {
                         >
                           💬 Chat
                         </button>
+                        {u.role !== "ADMIN" && (
+                          <button
+                            onClick={() => makeAdmin(u.id)}
+                            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-3 py-1 rounded-lg text-sm hover:from-blue-600 hover:to-indigo-700"
+                          >
+                            👑 Make Admin
+                          </button>
+                        )}
                         <button
                           onClick={() => deleteUser(u.id)}
                           className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600"
@@ -688,12 +739,6 @@ export default function AdminDashboard() {
                           className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-lg text-sm"
                         >
                           💬
-                        </button>
-                        <button
-                          onClick={() => verifyProvider(p.id)}
-                          className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg text-sm"
-                        >
-                          ✓ Verify
                         </button>
                         <button
                           onClick={() => deleteUser(p.id)}
@@ -761,6 +806,224 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Verification Tab */}
+            {activeTab === "verification" && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Provider Verification ({verificationProfiles.length})</h3>
+                <div className="space-y-3">
+                  {verificationProfiles.map(profile => {
+                    // Find provider user details
+                    const providerUser = users.find(u => u.id === profile.providerId);
+                    // Normalize status to ensure buttons show when backend returns null/undefined/lowercase
+                    const status = (profile.verificationStatus || "PENDING").toUpperCase();
+                    
+                    return (
+                      <div key={profile.id} className="border-2 p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="font-bold text-lg text-gray-800">
+                                {providerUser?.name || `Provider #${profile.providerId}`}
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                status === "APPROVED" ? "bg-green-100 text-green-800" :
+                                status === "REJECTED" ? "bg-red-100 text-red-800" :
+                                "bg-yellow-100 text-yellow-800"
+                              }`}>
+                                {status}
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              📧 {providerUser?.email || "N/A"}
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              🏷️ Categories: {Array.isArray(profile.categories) ? profile.categories.join(", ") : profile.categories || "N/A"}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              📍 Location: {profile.location || "N/A"}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Document Section */}
+                        {profile.verificationDocumentUrl ? (
+                          <div className="mb-3 p-3 bg-blue-50 border-2 border-blue-300 rounded-lg">
+                            <div className="text-xs font-semibold text-blue-700 mb-2">📄 Verification Document</div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 text-sm text-blue-600 truncate" title={profile.verificationDocumentUrl}>
+                                {profile.verificationDocumentUrl}
+                              </div>
+                              <a
+                                href={profile.verificationDocumentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 whitespace-nowrap font-semibold shadow-sm hover:shadow-md transition"
+                              >
+                                🔍 View Document
+                              </a>
+                              {status !== "APPROVED" && (
+                                <button
+                                  onClick={() => handleVerification(profile.providerId, "APPROVED")}
+                                  className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 font-semibold shadow-sm hover:shadow-md transition"
+                                  title="Approve after reviewing the document"
+                                >
+                                  ✓ Approve
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mb-3 p-3 bg-orange-50 border-2 border-orange-300 rounded-lg">
+                            <div className="text-sm text-orange-700 font-semibold">⚠️ No document uploaded yet</div>
+                            <div className="text-xs text-orange-600 mt-1">Provider needs to upload verification documents</div>
+                          </div>
+                        )}
+
+                        {/* Admin Notes */}
+                        {profile.verificationNotes && (
+                          <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <div className="text-xs font-semibold text-gray-700 mb-1">📝 Admin Notes:</div>
+                            <div className="text-sm text-gray-800">{profile.verificationNotes}</div>
+                          </div>
+                        )}
+
+                        {/* Action Buttons - Always show for PENDING status */}
+                        {status !== "APPROVED" && (
+                          <div className="flex gap-3 mt-3">
+                            <button
+                              onClick={() => handleVerification(profile.providerId, "APPROVED")}
+                              className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2.5 rounded-lg text-sm hover:from-green-600 hover:to-emerald-700 font-bold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
+                            >
+                              ✓ Approve Verification
+                            </button>
+                            <button
+                              onClick={() => handleVerification(profile.providerId, "REJECTED")}
+                              className="flex-1 bg-red-500 text-white px-4 py-2.5 rounded-lg text-sm hover:bg-red-600 font-bold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
+                            >
+                              ✗ Reject Verification
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Already Verified/Rejected Status */}
+                        {status === "APPROVED" && (
+                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="text-sm text-green-700 font-semibold">✅ Provider is verified</div>
+                            {profile.verifiedAt && (
+                              <div className="text-xs text-green-600 mt-1">
+                                Verified on: {new Date(profile.verifiedAt).toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {status === "REJECTED" && (
+                          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <div className="text-sm text-red-700 font-semibold">❌ Verification rejected</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {verificationProfiles.length === 0 && (
+                    <div className="text-gray-500 text-center py-8">No verification requests</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Disputes Tab */}
+            {activeTab === "disputes" && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Disputes & Reports ({disputes.length})</h3>
+                <div className="space-y-3">
+                  {disputes.map(dispute => (
+                    <div key={dispute.id} className="border p-4 rounded-lg bg-white">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-800">Dispute #{dispute.id}</div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            Booking #{dispute.bookingId} • Category: {dispute.category}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Customer #{dispute.customerId} vs Provider #{dispute.providerId}
+                          </div>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          dispute.status === "RESOLVED" ? "bg-green-100 text-green-800" :
+                          dispute.status === "REJECTED" ? "bg-red-100 text-red-800" :
+                          dispute.status === "IN_PROGRESS" ? "bg-blue-100 text-blue-800" :
+                          "bg-yellow-100 text-yellow-800"
+                        }`}>
+                          {dispute.status}
+                        </span>
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="font-medium text-sm text-gray-700">{dispute.subject}</div>
+                        <div className="text-sm text-gray-600 mt-1">{dispute.description}</div>
+                      </div>
+
+                      {dispute.refundAmount && (
+                        <div className="text-sm text-gray-700 mb-2">
+                          Refund: ₹{dispute.refundAmount} • Status: {dispute.refundStatus}
+                        </div>
+                      )}
+
+                      {dispute.adminNotes && (
+                        <div className="mb-2 p-2 bg-blue-50 rounded">
+                          <div className="text-xs text-gray-600 mb-1">Admin Notes:</div>
+                          <div className="text-sm text-gray-800">{dispute.adminNotes}</div>
+                        </div>
+                      )}
+
+                      {dispute.resolutionNotes && (
+                        <div className="mb-2 p-2 bg-green-50 rounded">
+                          <div className="text-xs text-gray-600 mb-1">Resolution:</div>
+                          <div className="text-sm text-gray-800">{dispute.resolutionNotes}</div>
+                        </div>
+                      )}
+
+                      {dispute.status !== "RESOLVED" && dispute.status !== "REJECTED" && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => {
+                              const notes = prompt("Enter resolution notes:");
+                              if (notes) updateDispute(dispute.id, { status: "RESOLVED", resolutionNotes: notes });
+                            }}
+                            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-lg text-sm"
+                          >
+                            Resolve
+                          </button>
+                          <button
+                            onClick={() => {
+                              const notes = prompt("Enter rejection reason:");
+                              if (notes) updateDispute(dispute.id, { status: "REJECTED", adminNotes: notes });
+                            }}
+                            className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
+                          >
+                            Reject
+                          </button>
+                          <button
+                            onClick={() => {
+                              const amount = prompt("Enter refund amount:");
+                              if (amount) updateDispute(dispute.id, { refundAmount: parseFloat(amount), refundStatus: "APPROVED" });
+                            }}
+                            className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm"
+                          >
+                            Approve Refund
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {disputes.length === 0 && (
+                    <div className="text-gray-500 text-center py-8">No disputes reported</div>
+                  )}
                 </div>
               </div>
             )}

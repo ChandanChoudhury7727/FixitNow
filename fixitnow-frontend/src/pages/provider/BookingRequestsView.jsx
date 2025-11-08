@@ -43,14 +43,22 @@ export default function BookingRequestsView() {
   }, []);
 
   const updateStatus = async (id, action) => {
-    if (!window.confirm(`Are you sure you want to ${action} this booking?`)) return;
     try {
       setUpdatingId(id);
-      await api.post(`/api/provider/bookings/${id}/${action}`);
-      await fetchBookings();
+      const response = await api.post(`/api/provider/bookings/${id}/${action}`);
+      
+      // Update local state immediately
+      setBookings(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === id 
+            ? { ...booking, status: response.data.status }
+            : booking
+        )
+      );
     } catch (err) {
       console.error(err);
-      alert("Update failed");
+      // Refresh to get correct state from server
+      await fetchBookings();
     } finally {
       setUpdatingId(null);
     }
@@ -113,23 +121,61 @@ export default function BookingRequestsView() {
               </div>
 
               <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => updateStatus(b.id, "accept")}
-                  disabled={updatingId === b.id}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
-                  aria-label={`Accept booking ${b.id}`}
-                >
-                  {updatingId === b.id ? "Updating…" : "Accept"}
-                </button>
+                {b.status === "PENDING" && (
+                  <>
+                    <button
+                      onClick={() => updateStatus(b.id, "accept")}
+                      disabled={updatingId === b.id}
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                      aria-label={`Accept booking ${b.id}`}
+                    >
+                      {updatingId === b.id ? "Updating…" : "Accept"}
+                    </button>
 
-                <button
-                  onClick={() => updateStatus(b.id, "reject")}
-                  disabled={updatingId === b.id}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition"
-                  aria-label={`Reject booking ${b.id}`}
-                >
-                  {updatingId === b.id ? "Updating…" : "Reject"}
-                </button>
+                    <button
+                      onClick={() => updateStatus(b.id, "reject")}
+                      disabled={updatingId === b.id}
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                      aria-label={`Reject booking ${b.id}`}
+                    >
+                      {updatingId === b.id ? "Updating…" : "Reject"}
+                    </button>
+                  </>
+                )}
+
+                {b.status === "CONFIRMED" && (
+                  <>
+                    <div className="text-green-700 font-semibold bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+                      ✓ Accepted
+                    </div>
+                    <button
+                      onClick={() => updateStatus(b.id, "complete")}
+                      disabled={updatingId === b.id}
+                      className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                      aria-label={`Mark booking ${b.id} as complete`}
+                    >
+                      {updatingId === b.id ? "Updating…" : "Mark Complete"}
+                    </button>
+                  </>
+                )}
+
+                {b.status === "REJECTED" && (
+                  <div className="text-red-700 font-semibold bg-red-50 px-4 py-2 rounded-lg border border-red-200">
+                    ✗ Rejected
+                  </div>
+                )}
+
+                {b.status === "COMPLETED" && (
+                  <div className="text-blue-700 font-semibold bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+                    ✓ Completed
+                  </div>
+                )}
+
+                {b.status === "CANCELLED" && (
+                  <div className="text-gray-700 font-semibold bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                    Cancelled by Customer
+                  </div>
+                )}
               </div>
             </div>
           ))}

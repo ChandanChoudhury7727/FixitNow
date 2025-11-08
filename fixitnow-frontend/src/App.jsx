@@ -15,8 +15,6 @@ import MapSearch from "./pages/MapSearch";
 import ProviderPanel from "./pages/provider/ProviderPanel";
 import CustomerPanel from "./pages/customer/CustomerPanel";
 import CustomerBookings from "./pages/customer/CustomerBookings";
-import ChatWithAdmin from "./pages/customer/ChatWithAdmin";
-
 
 // Admin
 import AdminDashboard from "./pages/AdminDashboard";
@@ -76,7 +74,6 @@ export default function App() {
               </RequireRole>
             }
           />
-          <Route path="/chat-admin" element={<RequireRole role="CUSTOMER"><ChatWithAdmin /></RequireRole>} />
 
           {/* Provider routes */}
           <Route

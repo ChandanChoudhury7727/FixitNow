@@ -65,6 +65,9 @@ function Sidebar({ active, setActive }) {
 function ProfilePane() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ categories: [], description: "", location: "" });
+  const [verificationStatus, setVerificationStatus] = useState("PENDING");
+  const [verificationNotes, setVerificationNotes] = useState("");
+  const [documentUrl, setDocumentUrl] = useState("");
   const [msg, setMsg] = useState("");
   const [locLoading, setLocLoading] = useState(false);
 
@@ -78,6 +81,9 @@ function ProfilePane() {
             description: res.data.description || "",
             location: res.data.location || "",
           });
+          setVerificationStatus(res.data.verificationStatus || "PENDING");
+          setVerificationNotes(res.data.verificationNotes || "");
+          setDocumentUrl(res.data.verificationDocumentUrl || "");
         }
       } catch (e) {
         // ignore
@@ -100,6 +106,7 @@ function ProfilePane() {
         categories: form.categories,
         description: form.description,
         location: form.location,
+        verificationDocumentUrl: documentUrl,
       });
       setMsg("Profile saved ✅");
       setTimeout(() => setMsg(""), 2500);
@@ -202,6 +209,43 @@ function ProfilePane() {
           >
             {locLoading ? "Locating…" : "Use my location"}
           </button>
+        </div>
+      </div>
+
+      {/* Verification Status */}
+      <div className="border-t pt-4">
+        <div className="text-sm font-medium mb-2 text-gray-700">Verification Status</div>
+        <div className="flex items-center gap-3 mb-3">
+          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            verificationStatus === "APPROVED" ? "bg-green-100 text-green-800" :
+            verificationStatus === "REJECTED" ? "bg-red-100 text-red-800" :
+            "bg-yellow-100 text-yellow-800"
+          }`}>
+            {verificationStatus === "APPROVED" ? "✓ Verified" :
+             verificationStatus === "REJECTED" ? "✗ Rejected" :
+             "⏳ Pending Verification"}
+          </span>
+        </div>
+        
+        {verificationNotes && (
+          <div className="bg-gray-50 p-3 rounded-lg mb-3">
+            <div className="text-xs text-gray-600 mb-1">Admin Notes:</div>
+            <div className="text-sm text-gray-800">{verificationNotes}</div>
+          </div>
+        )}
+
+        <div>
+          <div className="text-sm font-medium mb-1 text-gray-700">Verification Document URL</div>
+          <input
+            value={documentUrl}
+            onChange={(e) => setDocumentUrl(e.target.value)}
+            className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200"
+            placeholder="Enter document URL (e.g., Google Drive link, Dropbox link)"
+            aria-label="Verification document URL"
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            Upload your verification documents (ID, certifications) to a cloud service and paste the link here
+          </div>
         </div>
       </div>
 
@@ -543,13 +587,27 @@ function BookingsPane({ setChatCustomer }) {
     fetch();
   }, []);
 
+  const [updatingId, setUpdatingId] = useState(null);
+
   const update = async (id, action) => {
-    if (!window.confirm(`${action} booking?`)) return;
     try {
-      await api.post(`/api/provider/bookings/${id}/${action}`);
-      fetch();
+      setUpdatingId(id);
+      const response = await api.post(`/api/provider/bookings/${id}/${action}`);
+      
+      // Update local state immediately
+      setBookings(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === id 
+            ? { ...booking, status: response.data.status }
+            : booking
+        )
+      );
     } catch (e) {
-      alert("Update failed");
+      console.error(e);
+      // Refresh to get correct state from server
+      await fetch();
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -596,13 +654,62 @@ function BookingsPane({ setChatCustomer }) {
             <div className="flex gap-2 mt-3">
               <button
                 onClick={() => setChatCustomer({ id: b.customerId, name: customer?.name || `Customer #${b.customerId}` })}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-xl"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-xl hover:from-purple-600 hover:to-pink-600 transition"
               >
                 💬 Chat
               </button>
-              <button onClick={() => update(b.id, "accept")} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-xl">Accept</button>
-              <button onClick={() => update(b.id, "reject")} className="bg-red-500 text-white px-3 py-1 rounded-xl">Reject</button>
-              <button onClick={() => update(b.id, "complete")} className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 py-1 rounded-xl">Complete</button>
+
+              {b.status === "PENDING" && (
+                <>
+                  <button 
+                    onClick={() => update(b.id, "accept")} 
+                    disabled={updatingId === b.id}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-60 transition"
+                  >
+                    {updatingId === b.id ? "Updating…" : "Accept"}
+                  </button>
+                  <button 
+                    onClick={() => update(b.id, "reject")} 
+                    disabled={updatingId === b.id}
+                    className="bg-red-500 text-white px-3 py-1 rounded-xl hover:bg-red-600 disabled:opacity-60 transition"
+                  >
+                    {updatingId === b.id ? "Updating…" : "Reject"}
+                  </button>
+                </>
+              )}
+
+              {b.status === "CONFIRMED" && (
+                <>
+                  <div className="text-green-700 font-semibold bg-green-50 px-3 py-1 rounded-xl border border-green-200 text-sm">
+                    ✓ Accepted
+                  </div>
+                  <button 
+                    onClick={() => update(b.id, "complete")} 
+                    disabled={updatingId === b.id}
+                    className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 py-1 rounded-xl hover:from-indigo-700 hover:to-blue-700 disabled:opacity-60 transition"
+                  >
+                    {updatingId === b.id ? "Updating…" : "Mark Complete"}
+                  </button>
+                </>
+              )}
+
+              {b.status === "REJECTED" && (
+                <div className="text-red-700 font-semibold bg-red-50 px-3 py-1 rounded-xl border border-red-200 text-sm">
+                  ✗ Rejected
+                </div>
+              )}
+
+              {b.status === "COMPLETED" && (
+                <div className="text-blue-700 font-semibold bg-blue-50 px-3 py-1 rounded-xl border border-blue-200 text-sm">
+                  ✓ Completed
+                </div>
+              )}
+
+              {b.status === "CANCELLED" && (
+                <div className="text-gray-700 font-semibold bg-gray-50 px-3 py-1 rounded-xl border border-gray-200 text-sm">
+                  Cancelled by Customer
+                </div>
+              )}
             </div>
           </div>
         );

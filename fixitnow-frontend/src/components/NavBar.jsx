@@ -62,12 +62,6 @@ export default function NavBar() {
                   >
                     My Bookings
                   </Link>
-                  <button
-                    onClick={() => window.open("/chat-admin", "_blank")}
-                    className="flex items-center gap-1 bg-purple-600 text-white px-3 py-1.5 rounded-full hover:bg-purple-700 transition shadow-sm"
-                  >
-                    💬 Chat
-                  </button>
                 </>
               )}
 

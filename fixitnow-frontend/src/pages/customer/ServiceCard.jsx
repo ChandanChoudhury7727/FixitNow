@@ -68,12 +68,17 @@ export default function ServiceCard({ service }) {
     <article className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
       <div className="flex justify-between items-start">
         <div className="flex-1 pr-4">
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-baseline gap-3 flex-wrap">
             <h5 className="font-semibold text-lg text-gray-800">
               {service.category} {service.subcategory ? `· ${service.subcategory}` : ""}
             </h5>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 flex items-center gap-1">
               by <span className="font-medium text-gray-700">{service.providerName || `Provider #${service.providerId}`}</span>
+              {service.providerVerified && (
+                <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full" title="Verified Provider">
+                  ✓ Verified
+                </span>
+              )}
             </span>
           </div>
 
