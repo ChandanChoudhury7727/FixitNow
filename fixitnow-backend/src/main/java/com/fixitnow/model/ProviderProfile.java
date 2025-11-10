@@ -22,12 +22,27 @@ public class ProviderProfile {
 
     private String location;
 
+    @Column(name = "verification_status")
+    private String verificationStatus; // PENDING, APPROVED, REJECTED
+
+    @Column(name = "verification_document_url")
+    private String verificationDocumentUrl; // URL or path to uploaded document
+
+    @Column(name = "verification_notes")
+    private String verificationNotes; // Admin notes for rejection/approval
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+        if (this.verificationStatus == null) {
+            this.verificationStatus = "PENDING";
+        }
     }
 
     // --- getters & setters ---
@@ -45,6 +60,18 @@ public class ProviderProfile {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public String getVerificationStatus() { return verificationStatus; }
+    public void setVerificationStatus(String verificationStatus) { this.verificationStatus = verificationStatus; }
+
+    public String getVerificationDocumentUrl() { return verificationDocumentUrl; }
+    public void setVerificationDocumentUrl(String verificationDocumentUrl) { this.verificationDocumentUrl = verificationDocumentUrl; }
+
+    public String getVerificationNotes() { return verificationNotes; }
+    public void setVerificationNotes(String verificationNotes) { this.verificationNotes = verificationNotes; }
+
+    public LocalDateTime getVerifiedAt() { return verifiedAt; }
+    public void setVerifiedAt(LocalDateTime verifiedAt) { this.verifiedAt = verifiedAt; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

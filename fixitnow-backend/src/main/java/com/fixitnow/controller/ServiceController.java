@@ -86,8 +86,12 @@ public class ServiceController {
             m.put("createdAt", s.getCreatedAt());
             m.put("providerId", s.getProviderId());
             if (distances.containsKey(s.getId())) m.put("distanceKm", distances.get(s.getId()));
-            // provider name
+            // provider name and verification status
             userRepo.findById(s.getProviderId()).ifPresent(u -> m.put("providerName", u.getName()));
+            providerProfileRepo.findByProviderId(s.getProviderId()).ifPresent(pp -> {
+                m.put("providerVerified", "APPROVED".equals(pp.getVerificationStatus()));
+                m.put("providerVerificationStatus", pp.getVerificationStatus());
+            });
             return m;
         }).collect(Collectors.toList());
 
@@ -121,6 +125,8 @@ public class ServiceController {
                         m.put("providerProfileDescription", pp.getDescription());
                         m.put("providerProfileCategories", pp.getCategories());
                         m.put("providerProfileLocation", pp.getLocation());
+                        m.put("providerVerified", "APPROVED".equals(pp.getVerificationStatus()));
+                        m.put("providerVerificationStatus", pp.getVerificationStatus());
                     });
 
                     // reviews & average

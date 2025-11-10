@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import api from "../../api/axiosInstance";
 import ReviewModal from "./ReviewModal";
 import ChatWindow from "../../components/ChatWindow";
+import DisputeModal from "../../components/DisputeModal";
 
 function StatusBadge({ status }) {
   const styles = {
@@ -28,6 +29,7 @@ export default function CustomerBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [disputeBooking, setDisputeBooking] = useState(null);
   const [reviewBooking, setReviewBooking] = useState(null);
   const [chatProvider, setChatProvider] = useState(null);
   const [bookingReviews, setBookingReviews] = useState({}); // Store reviews by booking ID
@@ -274,6 +276,17 @@ export default function CustomerBookings() {
                           ⭐ Leave Review
                         </button>
                       )}
+
+                      {/* Report Issue button */}
+                      {booking.status === "COMPLETED" && (
+                        <button
+                          onClick={() => setDisputeBooking(booking)}
+                          className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-red-600 whitespace-nowrap"
+                          aria-label={`Report issue for booking ${booking.id}`}
+                        >
+                          🚨 Report Issue
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -299,6 +312,17 @@ export default function CustomerBookings() {
           receiverId={chatProvider.id}
           receiverName={chatProvider.name}
           onClose={() => setChatProvider(null)}
+        />
+      )}
+
+      {disputeBooking && (
+        <DisputeModal
+          booking={disputeBooking}
+          onClose={() => setDisputeBooking(null)}
+          onSuccess={() => {
+            setDisputeBooking(null);
+            setInfoMessage("Dispute submitted successfully. Our team will review it.");
+          }}
         />
       )}
     </div>

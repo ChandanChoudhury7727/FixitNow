@@ -174,11 +174,14 @@ package com.fixitnow.controller;
 
 import com.fixitnow.model.ServiceEntity;
 import com.fixitnow.model.User;
+import com.fixitnow.model.Role;
 import com.fixitnow.model.Booking;
+import com.fixitnow.model.ProviderProfile;
 import com.fixitnow.repository.ServiceRepository;
 import com.fixitnow.repository.UserRepository;
 import com.fixitnow.repository.BookingRepository;
 import com.fixitnow.repository.ReviewRepository;
+import com.fixitnow.repository.ProviderProfileRepository;
 import com.fixitnow.service.GeocodingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -196,17 +199,20 @@ public class AdminController {
     private final UserRepository userRepo;
     private final BookingRepository bookingRepo;
     private final ReviewRepository reviewRepo;
+    private final ProviderProfileRepository providerProfileRepo;
     private final GeocodingService geocodingService;
 
     public AdminController(ServiceRepository serviceRepo, 
                           UserRepository userRepo, 
                           BookingRepository bookingRepo,
                           ReviewRepository reviewRepo,
+                          ProviderProfileRepository providerProfileRepo,
                           GeocodingService geocodingService) {
         this.serviceRepo = serviceRepo;
         this.userRepo = userRepo;
         this.bookingRepo = bookingRepo;
         this.reviewRepo = reviewRepo;
+        this.providerProfileRepo = providerProfileRepo;
         this.geocodingService = geocodingService;
     }
 
@@ -262,21 +268,73 @@ public class AdminController {
     }
 
     /**
-     * Verify provider - Update user's verification status
+     * Get all provider profiles for verification
+     * GET /api/admin/providers/verification
      */
-    @PostMapping("/providers/{id}/verify")
-    public ResponseEntity<?> verifyProvider(@PathVariable Long id) {
+    @GetMapping("/providers/verification")
+    public ResponseEntity<?> getProvidersForVerification(@RequestParam(required = false) String status) {
+        List<ProviderProfile> profiles;
+        if (status != null && !status.isEmpty()) {
+            profiles = providerProfileRepo.findByVerificationStatus(status);
+        } else {
+            profiles = providerProfileRepo.findAllByOrderByCreatedAtDesc();
+        }
+        return ResponseEntity.ok(profiles);
+    }
+
+    /**
+     * Approve or reject provider verification
+     * POST /api/admin/providers/{providerId}/verify
+     */
+    @PostMapping("/providers/{providerId}/verify")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> verifyProvider(@PathVariable Long providerId, @RequestBody Map<String, String> payload) {
+        Optional<ProviderProfile> profileOpt = providerProfileRepo.findByProviderId(providerId);
+        if (profileOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Provider profile not found"));
+        }
+        
+        ProviderProfile profile = profileOpt.get();
+        String action = payload.getOrDefault("action", "APPROVED"); // APPROVED or REJECTED
+        String notes = payload.get("notes");
+        
+        profile.setVerificationStatus(action);
+        profile.setVerificationNotes(notes);
+        profile.setVerifiedAt(java.time.LocalDateTime.now());
+        providerProfileRepo.save(profile);
+        
+        return ResponseEntity.ok(Map.of(
+            "message", "Provider verification updated",
+            "providerId", providerId,
+            "status", action
+        ));
+    }
+
+    /**
+     * Promote user to admin role
+     */
+    @PostMapping("/users/{id}/make-admin")
+    public ResponseEntity<?> makeUserAdmin(@PathVariable Long id) {
         Optional<User> userOpt = userRepo.findById(id);
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Provider not found"));
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
         }
         
         User user = userOpt.get();
-        // Add a verified flag to user (you'll need to add this field to User entity)
-        // For now, just return success
+        
+        // Check if already admin
+        if (user.getRole() == Role.ADMIN) {
+            return ResponseEntity.status(400).body(Map.of("error", "User is already an admin"));
+        }
+        
+        // Promote to admin
+        user.setRole(Role.ADMIN);
+        userRepo.save(user);
+        
         return ResponseEntity.ok(Map.of(
-            "message", "Provider verified successfully",
-            "providerId", id
+            "message", "User promoted to admin successfully",
+            "userId", id,
+            "newRole", "ADMIN"
         ));
     }
 

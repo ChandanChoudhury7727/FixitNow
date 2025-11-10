@@ -291,6 +291,9 @@ public class ProviderController {
         }
         profile.setDescription(req.getDescription());
         profile.setLocation(req.getLocation());
+        if (req.getVerificationDocumentUrl() != null) {
+            profile.setVerificationDocumentUrl(req.getVerificationDocumentUrl());
+        }
         profileRepo.save(profile);
         return ResponseEntity.ok(Map.of("message", "Profile saved"));
     }
@@ -322,6 +325,10 @@ public class ProviderController {
         resp.put("categories", categoriesObj);
         resp.put("description", p.getDescription());
         resp.put("location", p.getLocation());
+        resp.put("verificationStatus", p.getVerificationStatus());
+        resp.put("verificationDocumentUrl", p.getVerificationDocumentUrl());
+        resp.put("verificationNotes", p.getVerificationNotes());
+        resp.put("verifiedAt", p.getVerifiedAt());
         resp.put("createdAt", p.getCreatedAt());
         return ResponseEntity.ok(resp);
     }

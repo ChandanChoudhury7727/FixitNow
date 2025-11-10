@@ -3,3 +3,7 @@
 body {
   @apply bg-gray-50 text-gray-800;
 }
+
+button {
+  cursor: pointer;
+}
