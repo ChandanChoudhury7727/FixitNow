@@ -3,9 +3,11 @@ package com.fixitnow.controller;
 import com.fixitnow.model.Dispute;
 import com.fixitnow.model.Booking;
 import com.fixitnow.model.User;
+import com.fixitnow.model.DisputeGroupChatMessage;
 import com.fixitnow.repository.DisputeRepository;
 import com.fixitnow.repository.BookingRepository;
 import com.fixitnow.repository.UserRepository;
+import com.fixitnow.repository.DisputeGroupChatMessageRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +25,16 @@ public class DisputeController {
     private final DisputeRepository disputeRepo;
     private final BookingRepository bookingRepo;
     private final UserRepository userRepo;
+    private final DisputeGroupChatMessageRepository groupChatRepo;
+    private final DisputeGroupChatMessageReadRepository messageReadRepo;
 
-    public DisputeController(DisputeRepository disputeRepo, BookingRepository bookingRepo, UserRepository userRepo) {
+    public DisputeController(DisputeRepository disputeRepo, BookingRepository bookingRepo, UserRepository userRepo,
+                             DisputeGroupChatMessageRepository groupChatRepo, DisputeGroupChatMessageReadRepository messageReadRepo) {
         this.disputeRepo = disputeRepo;
         this.bookingRepo = bookingRepo;
         this.userRepo = userRepo;
+        this.groupChatRepo = groupChatRepo;
+        this.messageReadRepo = messageReadRepo;
     }
 
     /**
@@ -211,5 +218,253 @@ public class DisputeController {
             "message", "Dispute updated successfully",
             "dispute", dispute
         ));
+    }
+
+    /**
+     * Get group chat messages for a dispute
+     * GET /api/disputes/{id}/group-chat
+     */
+    @GetMapping("/{id}/group-chat")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getGroupChatMessages(@PathVariable Long id, Principal principal) {
+        Optional<Dispute> disputeOpt = disputeRepo.findById(id);
+        if (disputeOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Dispute not found"));
+        }
+
+        Dispute dispute = disputeOpt.get();
+        Optional<User> userOpt = userRepo.findByEmail(principal.getName());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+
+        User user = userOpt.get();
+        Long userId = user.getId();
+
+        // Verify user is involved in this dispute or is admin
+        if (!dispute.getCustomerId().equals(userId) && !dispute.getProviderId().equals(userId) && !user.getRole().name().equals("ADMIN")) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+
+        List<DisputeGroupChatMessage> messages = groupChatRepo.findByDisputeIdOrderByCreatedAtAsc(id);
+        return ResponseEntity.ok(Map.of("messages", messages));
+    }
+
+    /**
+     * Send a message in group chat for a dispute
+     * POST /api/disputes/{id}/group-chat
+     */
+    @PostMapping("/{id}/group-chat")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> sendGroupChatMessage(@PathVariable Long id, @RequestBody Map<String, Object> payload, Principal principal) {
+        try {
+            if (principal == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            }
+
+            Optional<Dispute> disputeOpt = disputeRepo.findById(id);
+            if (disputeOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Dispute not found"));
+            }
+
+            Optional<User> userOpt = userRepo.findByEmail(principal.getName());
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            }
+
+            Dispute dispute = disputeOpt.get();
+            User user = userOpt.get();
+            Long userId = user.getId();
+
+            // Determine sender type and verify access
+            String senderType = "ADMIN";
+            if (dispute.getCustomerId().equals(userId)) {
+                senderType = "CUSTOMER";
+            } else if (dispute.getProviderId().equals(userId)) {
+                senderType = "PROVIDER";
+            } else if (!user.getRole().name().equals("ADMIN")) {
+                // Non-admin users can only send messages if they're involved in the dispute
+                return ResponseEntity.status(403).body(Map.of("error", "You are not involved in this dispute"));
+            }
+
+            DisputeGroupChatMessage message = new DisputeGroupChatMessage();
+            message.setDisputeId(id);
+            message.setSenderId(userId);
+            message.setSenderType(senderType);
+            message.setMessage(payload.get("message").toString());
+
+            groupChatRepo.save(message);
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Message sent successfully",
+                "messageId", message.getId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("error", "Invalid request: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Get service chats for a user (customer/provider)
+     * GET /api/disputes/service-chats/my
+     */
+    @GetMapping("/service-chats/my")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getMyServiceChats(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Optional<User> userOpt = userRepo.findByEmail(principal.getName());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+        Long userId = userOpt.get().getId();
+
+        // Get disputes where user is customer or provider
+        List<Dispute> disputes = disputeRepo.findAll().stream()
+            .filter(d -> d.getCustomerId().equals(userId) || d.getProviderId().equals(userId))
+            .sorted((a, b) -> b.getUpdatedAt().compareTo(a.getUpdatedAt()))
+            .toList();
+
+        return ResponseEntity.ok(disputes);
+    }
+
+    /**
+     * Mark messages as read for a dispute (per-user)
+     * PUT /api/disputes/{id}/group-chat/mark-read
+     */
+    @PutMapping("/{id}/group-chat/mark-read")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> markMessagesAsRead(@PathVariable Long id, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Optional<Dispute> disputeOpt = disputeRepo.findById(id);
+        if (disputeOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Dispute not found"));
+        }
+
+        Dispute dispute = disputeOpt.get();
+        Optional<User> userOpt = userRepo.findByEmail(principal.getName());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+        Long userId = userOpt.get().getId();
+
+        // Verify user is involved in this dispute
+        if (!dispute.getCustomerId().equals(userId) && !dispute.getProviderId().equals(userId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+
+        // Get all messages in this dispute
+        List<DisputeGroupChatMessage> allMessages = groupChatRepo.findByDisputeIdOrderByCreatedAtAsc(id);
+        
+        // Mark messages as read for this specific user
+        for (DisputeGroupChatMessage msg : allMessages) {
+            // Don't mark own messages as read
+            if (!msg.getSenderId().equals(userId)) {
+                var readRecord = messageReadRepo.findByMessageIdAndUserId(msg.getId(), userId);
+                if (readRecord.isEmpty()) {
+                    var newRead = new com.fixitnow.model.DisputeGroupChatMessageRead();
+                    newRead.setMessageId(msg.getId());
+                    newRead.setUserId(userId);
+                    newRead.setIsRead(true);
+                    messageReadRepo.save(newRead);
+                } else {
+                    var record = readRecord.get();
+                    record.setIsRead(true);
+                    messageReadRepo.save(record);
+                }
+            }
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Messages marked as read"));
+    }
+
+    /**
+     * Get unread message count for a dispute (per-user, excluding messages sent by current user)
+     * GET /api/disputes/{id}/group-chat/unread-count
+     */
+    @GetMapping("/{id}/group-chat/unread-count")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getUnreadCount(@PathVariable Long id, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Optional<Dispute> disputeOpt = disputeRepo.findById(id);
+        if (disputeOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Dispute not found"));
+        }
+
+        Dispute dispute = disputeOpt.get();
+        Optional<User> userOpt = userRepo.findByEmail(principal.getName());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+        Long userId = userOpt.get().getId();
+
+        // Verify user is involved in this dispute
+        if (!dispute.getCustomerId().equals(userId) && !dispute.getProviderId().equals(userId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+
+        // Get all messages in this dispute that were NOT sent by current user
+        List<DisputeGroupChatMessage> messages = groupChatRepo.findByDisputeIdOrderByCreatedAtAsc(id).stream()
+            .filter(msg -> !msg.getSenderId().equals(userId))
+            .toList();
+
+        // Count how many of these messages are unread for this specific user
+        long unreadCount = 0;
+        for (DisputeGroupChatMessage msg : messages) {
+            var readRecord = messageReadRepo.findByMessageIdAndUserId(msg.getId(), userId);
+            if (readRecord.isEmpty() || !readRecord.get().getIsRead()) {
+                unreadCount++;
+            }
+        }
+
+        return ResponseEntity.ok(Map.of("unreadCount", unreadCount));
+    }
+
+    /**
+     * Get total unread message count for all service chats of a user (per-user, excluding messages sent by user)
+     * GET /api/disputes/service-chats/unread-total
+     */
+    @GetMapping("/service-chats/unread-total")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getTotalUnreadCount(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Optional<User> userOpt = userRepo.findByEmail(principal.getName());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+        Long userId = userOpt.get().getId();
+
+        // Get all disputes where user is customer or provider
+        List<Dispute> disputes = disputeRepo.findAll().stream()
+            .filter(d -> d.getCustomerId().equals(userId) || d.getProviderId().equals(userId))
+            .toList();
+
+        // Count total unread messages across all disputes (per-user, excluding messages sent by current user)
+        long totalUnread = 0;
+        for (Dispute dispute : disputes) {
+            List<DisputeGroupChatMessage> messages = groupChatRepo.findByDisputeIdOrderByCreatedAtAsc(dispute.getId()).stream()
+                .filter(msg -> !msg.getSenderId().equals(userId))
+                .toList();
+            
+            for (DisputeGroupChatMessage msg : messages) {
+                var readRecord = messageReadRepo.findByMessageIdAndUserId(msg.getId(), userId);
+                if (readRecord.isEmpty() || !readRecord.get().getIsRead()) {
+                    totalUnread++;
+                }
+            }
+        }
+
+        return ResponseEntity.ok(Map.of("totalUnread", totalUnread));
     }
 }

@@ -5,6 +5,7 @@ import api from "../../api/axiosInstance";
 import ReviewModal from "./ReviewModal";
 import ChatWindow from "../../components/ChatWindow";
 import DisputeModal from "../../components/DisputeModal";
+import ServiceChatView from "../../components/ServiceChatView";
 
 function StatusBadge({ status }) {
   const styles = {
@@ -26,6 +27,7 @@ function StatusBadge({ status }) {
 }
 
 export default function CustomerBookings() {
+  const [activeTab, setActiveTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +37,7 @@ export default function CustomerBookings() {
   const [bookingReviews, setBookingReviews] = useState({}); // Store reviews by booking ID
   const [busyId, setBusyId] = useState(null);
   const [infoMessage, setInfoMessage] = useState("");
+  const [totalUnreadChats, setTotalUnreadChats] = useState(0);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -67,8 +70,21 @@ export default function CustomerBookings() {
     }
   };
 
+  const fetchTotalUnreadChats = async () => {
+    try {
+      const res = await api.get("/api/disputes/service-chats/unread-total");
+      setTotalUnreadChats(res.data.totalUnread || 0);
+    } catch (e) {
+      console.error("Failed to fetch unread count", e);
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
+    fetchTotalUnreadChats();
+    // Refresh unread count every 5 seconds
+    const interval = setInterval(fetchTotalUnreadChats, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleCancel = async (bookingId) => {
@@ -146,45 +162,95 @@ export default function CustomerBookings() {
 
   return (
     <div className="max-w-5xl mx-auto mt-8 px-4">
-      <div className="bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800">My Bookings</h2>
+      <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold text-gray-800">My Bookings & Chats</h2>
 
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-gray-500" aria-live="polite" role="status">
-              {loading ? "Loading..." : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""}`}
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-gray-500" aria-live="polite" role="status">
+                {activeTab === "bookings" && (loading ? "Loading..." : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""}`)}
+              </div>
+
+              {activeTab === "bookings" && (
+                <button
+                  onClick={fetchBookings}
+                  className="px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition"
+                  aria-label="Refresh bookings"
+                >
+                  🔄 Refresh
+                </button>
+              )}
+
+              <button
+                onClick={() => setActiveTab("service-chats")}
+                className="relative px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 transition font-semibold"
+                aria-label="View service chats"
+              >
+                💬 Service Chats
+                {totalUnreadChats > 0 && (
+                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                    {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
+                  </span>
+                )}
+              </button>
             </div>
-
-            <button
-              onClick={fetchBookings}
-              className="px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition"
-              aria-label="Refresh bookings"
-            >
-              🔄 Refresh
-            </button>
           </div>
         </div>
 
-        {infoMessage && (
-          <div className="mb-4 text-sm text-green-700" role="status">
-            {infoMessage}
-          </div>
-        )}
+        {/* Tabs */}
+        <div className="flex border-b bg-gray-50">
+          <button
+            onClick={() => setActiveTab("bookings")}
+            className={`flex-1 px-6 py-3 font-medium transition-colors ${
+              activeTab === "bookings"
+                ? "border-b-2 border-indigo-600 text-indigo-700 bg-white"
+                : "text-gray-600 hover:text-indigo-600"
+            }`}
+          >
+            📋 My Bookings
+          </button>
+          <button
+            onClick={() => setActiveTab("service-chats")}
+            className={`flex-1 px-6 py-3 font-medium transition-colors relative ${
+              activeTab === "service-chats"
+                ? "border-b-2 border-indigo-600 text-indigo-700 bg-white"
+                : "text-gray-600 hover:text-indigo-600"
+            }`}
+          >
+            💬 Service Chats
+            {totalUnreadChats > 0 && (
+              <span className="absolute top-1 right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
+              </span>
+            )}
+          </button>
+        </div>
 
-        {bookings.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <div className="text-4xl mb-4">📋</div>
-            <p className="text-lg">No bookings yet</p>
-            <p className="text-sm mt-2">Browse services and make your first booking!</p>
-            <a
-              href="/customer-panel"
-              className="inline-block mt-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-xl hover:from-green-700 hover:to-emerald-700 transition"
-            >
-              Browse Services
-            </a>
-          </div>
-        ) : (
-          <div className="space-y-4">
+        <div className="p-6">
+          {infoMessage && (
+            <div className="mb-4 text-sm text-green-700" role="status">
+              {infoMessage}
+            </div>
+          )}
+
+          {/* Bookings Tab */}
+          {activeTab === "bookings" && (
+            <>
+              {bookings.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="text-4xl mb-4">📋</div>
+                  <p className="text-lg">No bookings yet</p>
+                  <p className="text-sm mt-2">Browse services and make your first booking!</p>
+                  <a
+                    href="/customer-panel"
+                    className="inline-block mt-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-xl hover:from-green-700 hover:to-emerald-700 transition"
+                  >
+                    Browse Services
+                  </a>
+                </div>
+              ) : (
+                <div className="space-y-4">
             {bookings.map((booking) => {
               const review = bookingReviews[booking.id];
               const isBusy = busyId === booking.id;
@@ -292,8 +358,16 @@ export default function CustomerBookings() {
                 </div>
               );
             })}
-          </div>
-        )}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Service Chats Tab */}
+          {activeTab === "service-chats" && (
+            <ServiceChatView />
+          )}
+        </div>
       </div>
 
       {reviewBooking && (

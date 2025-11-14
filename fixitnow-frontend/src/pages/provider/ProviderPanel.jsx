@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axiosInstance";
 import ChatWindow from "../../components/ChatWindow";
+import ServiceChatView from "../../components/ServiceChatView";
 
-const TABS = ["Profile", "Services", "Offer Service", "Bookings", "Reviews"];
+const TABS = ["Profile", "Services", "Offer Service", "Bookings", "Reviews", "Service Chats"];
 
 // helper: reverse geocode using OpenStreetMap Nominatim
 async function reverseGeocode(lat, lon) {
@@ -36,7 +37,7 @@ async function reverseGeocode(lat, lon) {
   }
 }
 
-function Sidebar({ active, setActive }) {
+function Sidebar({ active, setActive, unreadCount }) {
   return (
     <aside className="w-full md:w-64 bg-white rounded-2xl shadow p-4">
       <h3 className="text-lg font-semibold mb-4 text-gray-800">Provider Panel</h3>
@@ -45,7 +46,7 @@ function Sidebar({ active, setActive }) {
           <button
             key={tab}
             onClick={() => setActive(tab)}
-            className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
+            className={`block w-full text-left px-3 py-2 rounded-lg transition-colors relative ${
               active === tab
                 ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white"
                 : "text-gray-700 hover:bg-gray-100"
@@ -53,7 +54,14 @@ function Sidebar({ active, setActive }) {
             aria-pressed={active === tab}
             aria-label={`Open ${tab}`}
           >
-            {tab}
+            <div className="flex items-center justify-between">
+              <span>{tab}</span>
+              {tab === "Service Chats" && unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </div>
           </button>
         ))}
       </nav>
@@ -799,13 +807,30 @@ function ReviewsPane() {
 export default function ProviderPanel() {
   const [active, setActive] = useState("Profile");
   const [chatCustomer, setChatCustomer] = useState(null);
+  const [totalUnreadChats, setTotalUnreadChats] = useState(0);
+
+  useEffect(() => {
+    const fetchTotalUnreadChats = async () => {
+      try {
+        const res = await api.get("/api/disputes/service-chats/unread-total");
+        setTotalUnreadChats(res.data.totalUnread || 0);
+      } catch (e) {
+        console.error("Failed to fetch unread count", e);
+      }
+    };
+
+    fetchTotalUnreadChats();
+    // Refresh unread count every 5 seconds
+    const interval = setInterval(fetchTotalUnreadChats, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <div className="col-span-1">
-            <Sidebar active={active} setActive={setActive} />
+            <Sidebar active={active} setActive={setActive} unreadCount={totalUnreadChats} />
           </div>
           <div className="col-span-1 md:col-span-4 space-y-6">
             {active === "Profile" && <ProfilePane />}
@@ -813,6 +838,7 @@ export default function ProviderPanel() {
             {active === "Offer Service" && <OfferServicePane />}
             {active === "Bookings" && <BookingsPane setChatCustomer={setChatCustomer} />}
             {active === "Reviews" && <ReviewsPane />}
+            {active === "Service Chats" && <ServiceChatView />}
           </div>
         </div>
       </div>

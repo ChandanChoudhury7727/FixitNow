@@ -69,12 +69,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+        // First, check if the email exists so we can distinguish messages
+        var existingUserOpt = userRepository.findByEmail(req.getEmail());
+        if (existingUserOpt.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid email"));
+        }
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
             );
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
+            return ResponseEntity.status(401).body(Map.of("error", "Wrong password"));
         }
 
         // load UserDetails (for token generation) and also fetch User entity to get role
