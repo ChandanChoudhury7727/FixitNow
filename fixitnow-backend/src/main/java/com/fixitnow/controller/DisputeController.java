@@ -8,6 +8,7 @@ import com.fixitnow.repository.DisputeRepository;
 import com.fixitnow.repository.BookingRepository;
 import com.fixitnow.repository.UserRepository;
 import com.fixitnow.repository.DisputeGroupChatMessageRepository;
+import com.fixitnow.repository.DisputeGroupChatMessageReadRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
