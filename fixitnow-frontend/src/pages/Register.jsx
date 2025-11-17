@@ -24,6 +24,7 @@ export default function Register() {
     setLoadingLocation(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        console.log("Location captured:", pos.coords);
         const coords = `${pos.coords.latitude},${pos.coords.longitude}`;
         try {
           // Reverse geocode using Nominatim
@@ -50,12 +51,17 @@ export default function Register() {
       (err) => {
         setMsg("❌ Location error: " + err.message);
         setLoadingLocation(false);
-      }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!form.location) {
+      setMsg("❌ Please capture your location before registering");
+      return;
+    }
     try {
       await api.post("/api/auth/register", form);
       setMsg("✅ Registered successfully. Please login.");
@@ -185,42 +191,58 @@ export default function Register() {
               {/* Location capture section */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700 ml-1">
-                  Location
+                  Location <span className="text-red-600">*</span>
                 </label>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={captureLocation}
-                    disabled={loadingLocation}
-                    className="flex-shrink-0 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center space-x-2 transform hover:scale-105 active:scale-95"
-                  >
-                    {loadingLocation ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={captureLocation}
+                      disabled={loadingLocation}
+                      className="flex-shrink-0 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center space-x-2 transform hover:scale-105 active:scale-95"
+                    >
+                      {loadingLocation ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Locating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span>Capture</span>
+                        </>
+                      )}
+                    </button>
+                    {form.location && (
+                      <div className="flex-1 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl px-4 py-3 flex items-center space-x-2">
+                        <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>Locating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span>Capture</span>
-                      </>
+                        <span className="text-sm text-blue-700 font-medium truncate">
+                          {form.location}
+                        </span>
+                      </div>
                     )}
-                  </button>
-                  {form.location && (
-                    <div className="flex-1 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl px-4 py-3 flex items-center space-x-2">
-                      <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="text-sm text-blue-700 font-medium truncate">
-                        {form.location}
-                      </span>
+                  </div>
+                  {form.location && form.location.includes(",") && (
+                    <div className="text-xs text-gray-500 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                      📍 Coordinates captured. You can edit below if needed.
                     </div>
+                  )}
+                  {form.location && (
+                    <input
+                      type="text"
+                      value={form.location}
+                      onChange={(e) => setForm({ ...form, location: e.target.value })}
+                      placeholder="Edit location name (e.g., Kopargaon, Pune)"
+                      className="w-full border-2 border-gray-300 px-4 py-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-200 text-sm"
+                    />
                   )}
                 </div>
               </div>

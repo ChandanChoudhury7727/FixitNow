@@ -660,6 +660,17 @@ function BookingsPane({ setChatCustomer }) {
             </div>
 
             <div className="flex gap-2 mt-3">
+              {b.customerLatitude && b.customerLongitude && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${b.customerLatitude},${b.customerLongitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-xl hover:from-red-600 hover:to-orange-600 transition flex items-center gap-1"
+                  title="Open customer location in Google Maps"
+                >
+                  🗺️ Maps
+                </a>
+              )}
               <button
                 onClick={() => setChatCustomer({ id: b.customerId, name: customer?.name || `Customer #${b.customerId}` })}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-xl hover:from-purple-600 hover:to-pink-600 transition"

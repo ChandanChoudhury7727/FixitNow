@@ -33,6 +33,10 @@ public class Booking {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    // Customer location coordinates
+    private Double customerLatitude;
+    private Double customerLongitude;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -69,6 +73,12 @@ public class Booking {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public Double getCustomerLatitude() { return customerLatitude; }
+    public void setCustomerLatitude(Double customerLatitude) { this.customerLatitude = customerLatitude; }
+
+    public Double getCustomerLongitude() { return customerLongitude; }
+    public void setCustomerLongitude(Double customerLongitude) { this.customerLongitude = customerLongitude; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

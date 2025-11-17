@@ -28,7 +28,7 @@ public class BookingController {
 
     /**
      * Create a booking.
-     * Expects JSON: { serviceId, customerId, bookingDate (YYYY-MM-DD), timeSlot, notes }
+     * Expects JSON: { serviceId, customerId, bookingDate (YYYY-MM-DD), timeSlot, notes, customerLatitude, customerLongitude }
      */
     @PostMapping
     public ResponseEntity<?> createBooking(@RequestBody Map<String, Object> body, @AuthUser Long customerId) {
@@ -37,6 +37,16 @@ public class BookingController {
             String bookingDateStr = body.get("bookingDate").toString();
             String timeSlot = body.get("timeSlot").toString();
             String notes = body.getOrDefault("notes", "").toString();
+            
+            // Extract customer location coordinates
+            Double customerLatitude = null;
+            Double customerLongitude = null;
+            if (body.containsKey("customerLatitude") && body.get("customerLatitude") != null) {
+                customerLatitude = Double.valueOf(body.get("customerLatitude").toString());
+            }
+            if (body.containsKey("customerLongitude") && body.get("customerLongitude") != null) {
+                customerLongitude = Double.valueOf(body.get("customerLongitude").toString());
+            }
 
             ServiceEntity service = serviceRepo.findById(serviceId).orElse(null);
             if (service == null) return ResponseEntity.status(404).body(Map.of("error","Service not found"));
@@ -60,6 +70,8 @@ public class BookingController {
             booking.setBookingDate(bookingDate);
             booking.setTimeSlot(timeSlot);
             booking.setNotes(notes);
+            booking.setCustomerLatitude(customerLatitude);
+            booking.setCustomerLongitude(customerLongitude);
             booking.setStatus(Booking.Status.PENDING);
 
             Booking saved = bookingRepo.save(booking);

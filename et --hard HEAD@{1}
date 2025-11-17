@@ -1,0 +1,77 @@
+[33mcommit 06d5330aee3bede05318f6510bd154542d100b70[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: 9392fe9 e709bed
+Author: CHANDAN CHOUDHURY <139882179+ChandanChoudhury7727@users.noreply.github.com>
+Date:   Fri Nov 14 23:52:34 2025 +0530
+
+    Merge pull request #2 from akshaykhardekar10/main
+    
+    added admin chat , fixed login issues
+
+[33mcommit e709bedfd65834581d7c727c96b1abe7a45b0f3e[m
+Author: akshaykhardekar10 <khardekarakshay33@gmail.com>
+Date:   Fri Nov 14 21:18:23 2025 +0530
+
+    added analytics part , added chat with admin option , small ui changes and improvements
+
+[33mcommit b687f286bd1d9fa27922f914bc4cc26d6d928e90[m
+Author: akshaykhardekar10 <khardekarakshay33@gmail.com>
+Date:   Fri Nov 14 19:30:09 2025 +0530
+
+    fixed the login page error
+
+[33mcommit 9392fe92e897ee9ad6c7b9f6f124986e92dc3b1e[m
+Merge: 075fd9e a2c6253
+Author: CHANDAN CHOUDHURY <139882179+ChandanChoudhury7727@users.noreply.github.com>
+Date:   Mon Nov 10 11:30:03 2025 +0530
+
+    Merge pull request #1 from akshaykhardekar10/main
+    
+    fixed chatting part ,added verification, and minor fixes
+
+[33mcommit a2c6253d6e2a274031c43237e4d8bee8382a62d8[m
+Author: akshaykhardekar10 <khardekarakshay33@gmail.com>
+Date:   Sun Nov 9 01:45:57 2025 +0530
+
+    fixed xhat issue, added provider profile verification ,fixed some buttons ,minor improvements
+
+[33mcommit 9dbfaf7f649f98179a01d84ac7c3d6164b6810da[m
+Author: akshaykhardekar10 <khardekarakshay33@gmail.com>
+Date:   Sun Nov 9 01:44:44 2025 +0530
+
+    fixed xhat issue, added provider profile verification ,fixed some buttons ,minor improvements
+
+[33mcommit aa49a7960bf3b848e23d8a1cd386bdd7aa1a676e[m
+Author: akshaykhardekar10 <khardekarakshay33@gmail.com>
+Date:   Sun Nov 9 01:38:45 2025 +0530
+
+    fixed xhat issue, added provider profile verification ,fixed some buttons ,minor improvements
+
+[33mcommit 075fd9ec050964c0af69eff3c6eca240b0b30be5[m
+Author: CHANDAN CHOUDHURY <139882179+ChandanChoudhury7727@users.noreply.github.com>
+Date:   Fri Oct 31 16:47:47 2025 +0530
+
+    Update README.md
+
+[33mcommit 27fc141eedf55e083f2ea5a69089042c8ac3ffc0[m
+Author: CHANDAN CHOUDHURY <139882179+ChandanChoudhury7727@users.noreply.github.com>
+Date:   Fri Oct 31 16:44:53 2025 +0530
+
+    Create README.md
+
+[33mcommit 56b5d19a9eefb18267f2b705fc25951ad361cbb9[m
+Author: ChandanChoudhury7727 <chandanchoudhury7727@gmail.com>
+Date:   Fri Oct 31 16:32:05 2025 +0530
+
+    Updated frontend UI and fixed backend issues (31 Oct)
+
+[33mcommit b36729c09be37fcef5d13ed8bb367ac629be1bd7[m
+Author: ChandanChoudhury7727 <chandanchoudhury7727@gmail.com>
+Date:   Thu Oct 30 16:25:08 2025 +0530
+
+    Enhanced UI and updated ChatWindow, ChatWithAdmin, and NavBar components
+
+[33mcommit 44b8ea1ec9299d3c85df17a4b9438f7e0c369380[m
+Author: ChandanChoudhury7727 <chandanchoudhury7727@gmail.com>
+Date:   Tue Oct 28 08:31:01 2025 +0530
+
+    Initial commit - upload FixitNow project safely

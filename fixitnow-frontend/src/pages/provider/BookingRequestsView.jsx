@@ -121,6 +121,17 @@ export default function BookingRequestsView() {
               </div>
 
               <div className="flex gap-3 mt-4">
+                {b.customerLatitude && b.customerLongitude && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${b.customerLatitude},${b.customerLongitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-red-600 hover:to-orange-600 transition flex items-center gap-2"
+                    aria-label={`Open customer location in Google Maps for booking ${b.id}`}
+                  >
+                    🗺️ View on Maps
+                  </a>
+                )}
                 {b.status === "PENDING" && (
                   <>
                     <button

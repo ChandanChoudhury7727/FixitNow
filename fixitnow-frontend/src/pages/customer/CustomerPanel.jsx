@@ -349,7 +349,8 @@ export default function CustomerPanel() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setMapCenter({ lat: latitude, lng: longitude });
+        const newCenter = { lat: latitude, lng: longitude };
+        setMapCenter(newCenter);
         
         // Fetch services near this location
         fetchServices({
@@ -364,7 +365,8 @@ export default function CustomerPanel() {
       (error) => {
         console.error("Error getting location:", error);
         alert("Unable to get your location");
-      }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 

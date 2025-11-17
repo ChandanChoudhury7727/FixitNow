@@ -28,11 +28,30 @@ export default function ServiceCard({ service }) {
 
     try {
       setSubmitting(true);
+      
+      // Get customer's current location
+      let customerLatitude = null;
+      let customerLongitude = null;
+      
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
+          });
+          customerLatitude = position.coords.latitude;
+          customerLongitude = position.coords.longitude;
+        } catch (err) {
+          console.warn("Could not get user location:", err);
+        }
+      }
+      
       const payload = {
         serviceId: service.id,
         bookingDate: bookingForm.bookingDate,
         timeSlot: bookingForm.timeSlot,
-        notes: bookingForm.notes
+        notes: bookingForm.notes,
+        customerLatitude,
+        customerLongitude
       };
 
       const res = await api.post("/api/bookings", payload);
