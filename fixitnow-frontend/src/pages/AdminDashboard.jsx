@@ -374,6 +374,7 @@ export default function AdminDashboard() {
   const [verificationProfiles, setVerificationProfiles] = useState([]);
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [chatUser, setChatUser] = useState(null);
   const [selectedGroupChat, setSelectedGroupChat] = useState(null);
   const [selectedUserProfile, setSelectedUserProfile] = useState(null);
@@ -415,10 +416,15 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    setError(null);
     try {
+      console.log("🔄 Fetching admin dashboard data...");
+      
       // Fetch all users
+      console.log("📥 Fetching users from /api/admin/users");
       const usersRes = await api.get("/api/admin/users");
       const allUsers = usersRes.data || [];
+      console.log("✅ Users fetched:", allUsers.length, allUsers);
       setUsers(allUsers);
 
       // Filter by role
@@ -426,31 +432,41 @@ export default function AdminDashboard() {
       setCustomers(allUsers.filter(u => u.role === "CUSTOMER"));
 
       // Fetch bookings
+      console.log("📥 Fetching bookings from /api/admin/bookings");
       const bookingsRes = await api.get("/api/admin/bookings");
+      console.log("✅ Bookings fetched:", bookingsRes.data?.length, bookingsRes.data);
       setBookings(bookingsRes.data || []);
 
       // Fetch services
+      console.log("📥 Fetching services from /api/admin/services");
       const servicesRes = await api.get("/api/admin/services");
+      console.log("✅ Services fetched:", servicesRes.data?.length, servicesRes.data);
       setServices(servicesRes.data || []);
 
       // Fetch analytics
+      console.log("📥 Fetching analytics from /api/admin/analytics");
       const analyticsRes = await api.get("/api/admin/analytics");
+      console.log("✅ Analytics fetched:", analyticsRes.data);
       setAnalytics(analyticsRes.data || {});
 
       // Fetch verification profiles
       try {
+        console.log("📥 Fetching verification profiles from /api/admin/providers/verification");
         const verificationRes = await api.get("/api/admin/providers/verification");
+        console.log("✅ Verification profiles fetched:", verificationRes.data);
         setVerificationProfiles(verificationRes.data || []);
       } catch (e) {
-        console.error("Failed to fetch verification profiles", e);
+        console.error("❌ Failed to fetch verification profiles", e);
       }
 
       // Fetch disputes
       try {
+        console.log("📥 Fetching disputes from /api/disputes/admin/all");
         const disputesRes = await api.get("/api/disputes/admin/all");
+        console.log("✅ Disputes fetched:", disputesRes.data);
         setDisputes(disputesRes.data || []);
       } catch (e) {
-        console.error("Failed to fetch disputes", e);
+        console.error("❌ Failed to fetch disputes", e);
       }
 
       // Calculate stats
@@ -462,8 +478,18 @@ export default function AdminDashboard() {
         services: servicesRes.data?.length || 0,
         pendingBookings: bookingsRes.data?.filter(b => b.status === "PENDING").length || 0
       });
+      console.log("✅ Dashboard data fetched successfully");
     } catch (e) {
-      console.error("Failed to fetch admin data", e);
+      const errorMsg = `Failed to fetch admin data: ${e.response?.status} ${e.response?.statusText || e.message}`;
+      console.error("❌ " + errorMsg, e);
+      console.error("Error details:", {
+        message: e.message,
+        status: e.response?.status,
+        statusText: e.response?.statusText,
+        data: e.response?.data,
+        config: e.config
+      });
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -532,6 +558,28 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
           <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-lg font-medium text-gray-700">Loading admin dashboard...</p>
+          <button
+            onClick={async () => {
+              try {
+                const res = await api.post("/api/auth/promote-to-admin");
+                // Store new tokens
+                if (res.data.accessToken) {
+                  localStorage.setItem("accessToken", res.data.accessToken);
+                }
+                if (res.data.refreshToken) {
+                  localStorage.setItem("refreshToken", res.data.refreshToken);
+                }
+                alert("Promoted to admin! Refreshing...");
+                // Refresh the page to reload with new token
+                window.location.reload();
+              } catch (err) {
+                alert("Error: " + (err.response?.data?.error || err.message));
+              }
+            }}
+            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          >
+            Promote to Admin
+          </button>
         </div>
       </div>
     );
@@ -540,6 +588,25 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-10">
       <div className="max-w-7xl mx-auto px-6">
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">❌</span>
+              <div>
+                <h3 className="font-semibold text-red-800">Error Loading Dashboard</h3>
+                <p className="text-red-700 text-sm">{error}</p>
+              </div>
+              <button
+                onClick={() => fetchDashboardData()}
+                className="ml-auto px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

@@ -9,18 +9,27 @@ import ServiceChatView from "../../components/ServiceChatView";
 
 function StatusBadge({ status }) {
   const styles = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    CONFIRMED: "bg-green-100 text-green-800",
-    COMPLETED: "bg-blue-100 text-blue-800",
-    REJECTED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
+    PENDING: "bg-gradient-to-r from-yellow-400/20 to-amber-400/20 text-yellow-700 border border-yellow-300/50",
+    CONFIRMED: "bg-gradient-to-r from-green-400/20 to-emerald-400/20 text-green-700 border border-green-300/50",
+    COMPLETED: "bg-gradient-to-r from-blue-400/20 to-cyan-400/20 text-blue-700 border border-blue-300/50",
+    REJECTED: "bg-gradient-to-r from-red-400/20 to-rose-400/20 text-red-700 border border-red-300/50",
+    CANCELLED: "bg-gradient-to-r from-gray-400/20 to-slate-400/20 text-gray-700 border border-gray-300/50",
+  };
+
+  const icons = {
+    PENDING: "⏳",
+    CONFIRMED: "✅",
+    COMPLETED: "🎉",
+    REJECTED: "❌",
+    CANCELLED: "🚫",
   };
 
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status] || styles.PENDING}`}
+      className={`px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2 ${styles[status] || styles.PENDING}`}
       aria-label={`Status: ${status}`}
     >
+      <span>{icons[status]}</span>
       {status}
     </span>
   );
@@ -161,212 +170,243 @@ export default function CustomerBookings() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto mt-8 px-4">
-      <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-800">My Bookings & Chats</h2>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+            My Bookings
+          </h1>
+          <p className="text-gray-600 text-lg">Manage your service bookings and communicate with providers</p>
+        </div>
 
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-500" aria-live="polite" role="status">
-                {activeTab === "bookings" && (loading ? "Loading..." : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""}`)}
+        {/* Main Card */}
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="p-8 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-slate-100">
+            <div className="flex justify-between items-center flex-wrap gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Bookings Dashboard</h2>
+                <p className="text-gray-600 text-sm mt-1">Track and manage all your service bookings</p>
               </div>
 
-              {activeTab === "bookings" && (
-                <button
-                  onClick={fetchBookings}
-                  className="px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition"
-                  aria-label="Refresh bookings"
-                >
-                  🔄 Refresh
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-gray-600 bg-white px-4 py-2 rounded-full border border-gray-200" aria-live="polite" role="status">
+                  {activeTab === "bookings" && (loading ? "Loading..." : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""}`)}
+                </div>
 
-              <button
-                onClick={() => setActiveTab("service-chats")}
-                className="relative px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 transition font-semibold"
-                aria-label="View service chats"
-              >
-                💬 Service Chats
-                {totalUnreadChats > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                    {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
-                  </span>
+                {activeTab === "bookings" && (
+                  <button
+                    onClick={fetchBookings}
+                    className="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 transition font-medium text-gray-700 hover:text-gray-900"
+                    aria-label="Refresh bookings"
+                  >
+                    🔄 Refresh
+                  </button>
                 )}
-              </button>
+
+                <button
+                  onClick={() => setActiveTab("service-chats")}
+                  className="relative px-6 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition font-semibold shadow-lg hover:shadow-xl"
+                  aria-label="View service chats"
+                >
+                  💬 Service Chats
+                  {totalUnreadChats > 0 && (
+                    <span className="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                      {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex border-b bg-gray-50">
-          <button
-            onClick={() => setActiveTab("bookings")}
-            className={`flex-1 px-6 py-3 font-medium transition-colors ${
-              activeTab === "bookings"
-                ? "border-b-2 border-indigo-600 text-indigo-700 bg-white"
-                : "text-gray-600 hover:text-indigo-600"
-            }`}
-          >
-            📋 My Bookings
-          </button>
-          <button
-            onClick={() => setActiveTab("service-chats")}
-            className={`flex-1 px-6 py-3 font-medium transition-colors relative ${
-              activeTab === "service-chats"
-                ? "border-b-2 border-indigo-600 text-indigo-700 bg-white"
-                : "text-gray-600 hover:text-indigo-600"
-            }`}
-          >
-            💬 Service Chats
-            {totalUnreadChats > 0 && (
-              <span className="absolute top-1 right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
-              </span>
+          {/* Tabs */}
+          <div className="flex border-b bg-gray-50">
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={`flex-1 px-6 py-4 font-semibold transition-all ${
+                activeTab === "bookings"
+                  ? "border-b-4 border-indigo-600 text-indigo-700 bg-white"
+                  : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100"
+              }`}
+            >
+              📋 My Bookings
+            </button>
+            <button
+              onClick={() => setActiveTab("service-chats")}
+              className={`flex-1 px-6 py-4 font-semibold transition-all relative ${
+                activeTab === "service-chats"
+                  ? "border-b-4 border-indigo-600 text-indigo-700 bg-white"
+                  : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100"
+              }`}
+            >
+              💬 Service Chats
+              {totalUnreadChats > 0 && (
+                <span className="absolute top-2 right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                  {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div className="p-8">
+            {infoMessage && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl text-green-700 font-semibold" role="status">
+                ✅ {infoMessage}
+              </div>
             )}
-          </button>
-        </div>
 
-        <div className="p-6">
-          {infoMessage && (
-            <div className="mb-4 text-sm text-green-700" role="status">
-              {infoMessage}
-            </div>
-          )}
+            {/* Bookings Tab */}
+            {activeTab === "bookings" && (
+              <>
+                {bookings.length === 0 ? (
+                  <div className="text-center py-16 text-gray-500">
+                    <div className="text-6xl mb-6">📋</div>
+                    <p className="text-2xl font-semibold mb-2">No bookings yet</p>
+                    <p className="text-lg mb-8">Browse services and make your first booking!</p>
+                    <a
+                      href="/customer-panel"
+                      className="inline-block bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition font-semibold shadow-lg hover:shadow-xl"
+                    >
+                      🔍 Browse Services
+                    </a>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    {bookings.map((booking) => {
+                      const review = bookingReviews[booking.id];
+                      const isBusy = busyId === booking.id;
+                      return (
+                        <div key={booking.id} className="bg-gradient-to-br from-white to-slate-50 border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:border-indigo-200">
+                          <div className="flex justify-between items-start gap-6 flex-col lg:flex-row">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-4 mb-4 flex-wrap">
+                                <div>
+                                  <h3 className="font-bold text-xl text-gray-800">Service #{booking.serviceId}</h3>
+                                  <p className="text-sm text-gray-500">Provider ID: {booking.providerId}</p>
+                                </div>
+                                <StatusBadge status={booking.status} />
+                              </div>
 
-          {/* Bookings Tab */}
-          {activeTab === "bookings" && (
-            <>
-              {bookings.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <div className="text-4xl mb-4">📋</div>
-                  <p className="text-lg">No bookings yet</p>
-                  <p className="text-sm mt-2">Browse services and make your first booking!</p>
-                  <a
-                    href="/customer-panel"
-                    className="inline-block mt-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-xl hover:from-green-700 hover:to-emerald-700 transition"
-                  >
-                    Browse Services
-                  </a>
-                </div>
-              ) : (
-                <div className="space-y-4">
-            {bookings.map((booking) => {
-              const review = bookingReviews[booking.id];
-              const isBusy = busyId === booking.id;
-              return (
-                <div key={booking.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 pr-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-lg text-gray-800">Service #{booking.serviceId}</h3>
-                        <StatusBadge status={booking.status} />
-                      </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                                <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                                  <p className="text-xs text-indigo-600 font-semibold">📅 Date</p>
+                                  <p className="text-sm font-semibold text-gray-800">
+                                    {booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : "N/A"}
+                                  </p>
+                                </div>
+                                <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
+                                  <p className="text-xs text-purple-600 font-semibold">🕐 Time</p>
+                                  <p className="text-sm font-semibold text-gray-800">{booking.timeSlot || "N/A"}</p>
+                                </div>
+                                <div className="bg-pink-50 rounded-lg p-3 border border-pink-100">
+                                  <p className="text-xs text-pink-600 font-semibold">📍 Location</p>
+                                  <p className="text-sm font-semibold text-gray-800">Service</p>
+                                </div>
+                              </div>
 
-                      <div className="space-y-1 text-sm text-gray-600">
-                        <p>
-                          <strong>Date:</strong>{" "}
-                          {booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : "N/A"}
-                        </p>
-                        <p><strong>Time:</strong> {booking.timeSlot || "N/A"}</p>
-                        <p><strong>Provider ID:</strong> {booking.providerId}</p>
-                        {booking.notes && <p><strong>Notes:</strong> {booking.notes}</p>}
-                        <p className="text-xs text-gray-400">
-                          Booked on: {booking.createdAt ? new Date(booking.createdAt).toLocaleString() : "N/A"}
-                        </p>
-                      </div>
+                              {booking.notes && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                  <p className="text-sm text-blue-900"><strong>📝 Notes:</strong> {booking.notes}</p>
+                                </div>
+                              )}
 
-                      {/* Show review if exists */}
-                      {review && (
-                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-blue-800">Your Review:</span>
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <span key={i} className={i < review.rating ? "text-yellow-400" : "text-gray-300"}>★</span>
-                              ))}
+                              {/* Show review if exists */}
+                              {review && (
+                                <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span className="font-bold text-yellow-800">⭐ Your Review</span>
+                                    <div className="flex gap-1">
+                                      {[...Array(5)].map((_, i) => (
+                                        <span key={i} className={`text-lg ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}>★</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-2">{review.comment || "No comment"}</p>
+                                  <p className="text-xs text-gray-500">Reviewed on: {new Date(review.createdAt).toLocaleDateString()}</p>
+                                </div>
+                              )}
+
+                              <p className="text-xs text-gray-400 mt-4">
+                                Booked on: {booking.createdAt ? new Date(booking.createdAt).toLocaleString() : "N/A"}
+                              </p>
+                            </div>
+
+                            <div className="flex flex-col gap-3 lg:w-48">
+                              {/* Chat button */}
+                              {(booking.status === "PENDING" ||
+                                booking.status === "CONFIRMED" ||
+                                booking.status === "COMPLETED") && (
+                                <button
+                                  onClick={() => handleOpenChat(booking.providerId)}
+                                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:from-purple-600 hover:to-pink-600 transition font-semibold shadow-md hover:shadow-lg"
+                                  aria-label={`Chat with provider ${booking.providerId}`}
+                                >
+                                  💬 Chat
+                                </button>
+                              )}
+
+                              {/* Cancel and Mark Complete buttons */}
+                              {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
+                                <>
+                                  <button
+                                    onClick={() => handleCancel(booking.id)}
+                                    disabled={isBusy}
+                                    className="bg-gradient-to-r from-red-500 to-rose-500 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold shadow-md hover:shadow-lg"
+                                    aria-label={`Cancel booking ${booking.id}`}
+                                  >
+                                    {isBusy ? "Canceling…" : "❌ Cancel"}
+                                  </button>
+
+                                  {booking.status === "CONFIRMED" && (
+                                    <button
+                                      onClick={() => handleMarkComplete(booking.id)}
+                                      disabled={isBusy}
+                                      className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold shadow-md hover:shadow-lg"
+                                      aria-label={`Mark booking ${booking.id} as complete`}
+                                    >
+                                      {isBusy ? "Updating…" : "✓ Complete"}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+
+                              {/* Leave Review button */}
+                              {booking.status === "COMPLETED" && !review && (
+                                <button
+                                  onClick={() => setReviewBooking(booking)}
+                                  className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition font-semibold shadow-md hover:shadow-lg"
+                                  aria-label={`Leave review for booking ${booking.id}`}
+                                >
+                                  ⭐ Review
+                                </button>
+                              )}
+
+                              {/* Report Issue button */}
+                              {booking.status === "COMPLETED" && (
+                                <button
+                                  onClick={() => setDisputeBooking(booking)}
+                                  className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-red-600 transition font-semibold shadow-md hover:shadow-lg"
+                                  aria-label={`Report issue for booking ${booking.id}`}
+                                >
+                                  🚨 Report
+                                </button>
+                              )}
                             </div>
                           </div>
-                          <p className="text-sm text-gray-700">{review.comment || "No comment"}</p>
-                          <p className="text-xs text-gray-500 mt-1">Reviewed on: {new Date(review.createdAt).toLocaleDateString()}</p>
                         </div>
-                      )}
-                    </div>
-
-                    <div className="ml-4 flex flex-col gap-2">
-                      {/* Chat button */}
-                      {(booking.status === "PENDING" ||
-                        booking.status === "CONFIRMED" ||
-                        booking.status === "COMPLETED") && (
-                        <button
-                          onClick={() => handleOpenChat(booking.providerId)}
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:from-purple-600 hover:to-pink-600 transition whitespace-nowrap flex items-center gap-2"
-                          aria-label={`Chat with provider ${booking.providerId}`}
-                        >
-                          💬 Chat with Provider
-                        </button>
-                      )}
-
-                      {/* Cancel and Mark Complete buttons */}
-                      {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
-                        <>
-                          <button
-                            onClick={() => handleCancel(booking.id)}
-                            disabled={isBusy}
-                            className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 disabled:opacity-60 whitespace-nowrap"
-                            aria-label={`Cancel booking ${booking.id}`}
-                          >
-                            {isBusy ? "Canceling…" : "❌ Cancel Booking"}
-                          </button>
-
-                          {booking.status === "CONFIRMED" && (
-                            <button
-                              onClick={() => handleMarkComplete(booking.id)}
-                              disabled={isBusy}
-                              className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-60 whitespace-nowrap"
-                              aria-label={`Mark booking ${booking.id} as complete`}
-                            >
-                              {isBusy ? "Updating…" : "✓ Mark Complete"}
-                            </button>
-                          )}
-                        </>
-                      )}
-
-                      {/* Leave Review button */}
-                      {booking.status === "COMPLETED" && !review && (
-                        <button
-                          onClick={() => setReviewBooking(booking)}
-                          className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-blue-700 whitespace-nowrap"
-                          aria-label={`Leave review for booking ${booking.id}`}
-                        >
-                          ⭐ Leave Review
-                        </button>
-                      )}
-
-                      {/* Report Issue button */}
-                      {booking.status === "COMPLETED" && (
-                        <button
-                          onClick={() => setDisputeBooking(booking)}
-                          className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-red-600 whitespace-nowrap"
-                          aria-label={`Report issue for booking ${booking.id}`}
-                        >
-                          🚨 Report Issue
-                        </button>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
-                </div>
-              );
-            })}
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
-          {/* Service Chats Tab */}
-          {activeTab === "service-chats" && (
-            <ServiceChatView />
-          )}
+            {/* Service Chats Tab */}
+            {activeTab === "service-chats" && (
+              <ServiceChatView />
+            )}
+          </div>
         </div>
       </div>
 

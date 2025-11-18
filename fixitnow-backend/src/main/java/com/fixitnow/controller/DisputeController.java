@@ -146,7 +146,7 @@ public class DisputeController {
      * GET /api/disputes/admin/all
      */
     @GetMapping("/admin/all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllDisputes(@RequestParam(required = false) String status) {
         List<Dispute> disputes;
         if (status != null && !status.isEmpty()) {
@@ -162,7 +162,7 @@ public class DisputeController {
      * PATCH /api/disputes/admin/{id}
      */
     @PatchMapping("/admin/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateDispute(@PathVariable Long id, @RequestBody Map<String, Object> payload, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));

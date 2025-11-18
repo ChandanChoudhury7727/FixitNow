@@ -45,10 +45,15 @@ const api = axios.create({
 
 api.interceptors.request.use(cfg => {
   const token = localStorage.getItem("accessToken");
+  console.log("🔐 Token from localStorage:", token ? token.substring(0, 20) + "..." : "NO TOKEN");
   if (token) {
     cfg.headers = cfg.headers || {};
     cfg.headers.Authorization = `Bearer ${token}`;
+    console.log("✅ Authorization header set");
+  } else {
+    console.warn("⚠️ NO TOKEN FOUND - Request will be unauthorized");
   }
+  console.log("📤 Request to:", cfg.url, "Headers:", cfg.headers);
   return cfg;
 }, e => Promise.reject(e));
 

@@ -39,8 +39,11 @@ async function reverseGeocode(lat, lon) {
 
 function Sidebar({ active, setActive, unreadCount }) {
   return (
-    <aside className="w-full md:w-64 bg-white rounded-2xl shadow p-4">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800">Provider Panel</h3>
+    <aside className="w-full md:w-64 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-5 border border-white/50 hover:shadow-xl transition-all duration-300">
+      <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+        <span className="text-xl">🏢</span>
+        <span>Provider Panel</span>
+      </h3>
       <nav className="space-y-2" aria-label="Provider panel navigation">
         {TABS.map((tab) => (
           <button
@@ -55,7 +58,7 @@ function Sidebar({ active, setActive, unreadCount }) {
             aria-label={`Open ${tab}`}
           >
             <div className="flex items-center justify-between">
-              <span>{tab}</span>
+              <span className="font-medium">{tab}</span>
               {tab === "Service Chats" && unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                   {unreadCount > 9 ? "9+" : unreadCount}
@@ -837,8 +840,25 @@ export default function ProviderPanel() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Provider Dashboard
+            </h1>
+            <p className="text-gray-600 mt-1">Manage your profile, services, bookings, and reviews in one place.</p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <div className="col-span-1">
             <Sidebar active={active} setActive={setActive} unreadCount={totalUnreadChats} />
@@ -855,7 +875,11 @@ export default function ProviderPanel() {
       </div>
 
       {chatCustomer && (
-        <ChatWindow receiverId={chatCustomer.id} receiverName={chatCustomer.name} onClose={() => setChatCustomer(null)} />
+        <ChatWindow
+          receiverId={chatCustomer.id}
+          receiverName={chatCustomer.name}
+          onClose={() => setChatCustomer(null)}
+        />
       )}
     </div>
   );

@@ -371,109 +371,125 @@ export default function CustomerPanel() {
   };
 
   return (
-    <div className="mt-6 container mx-auto px-4">
-      <div className="grid grid-cols-12 gap-6">
-        {/* Sidebar */}
-        <aside className="col-span-12 md:col-span-3 bg-white p-5 rounded-2xl shadow-md border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Find a service</h3>
-            <button
-              onClick={() => fetchServices({ category: category || undefined, location: location || undefined, q: query || undefined, sort })}
-              className="text-sm text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-50 transition"
-              title="Refresh"
-            >
-              <FaSyncAlt />
-            </button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
 
-          <form onSubmit={onSearch} className="space-y-4">
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-3 text-gray-400" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="What service do you need?"
-                className="pl-10 w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition"
-              />
-            </div>
+      <div className="relative z-10 container mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+            Find Services
+          </h1>
+          <p className="text-gray-600 text-lg">Browse and book professional services near you</p>
+        </div>
 
-            <div className="relative">
-              <FaMapMarkerAlt className="absolute left-3 top-3 text-gray-400" />
-              <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Location (city / area)"
-                className="pl-10 w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={useMyLocation}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-xl font-medium hover:from-blue-600 hover:to-indigo-700 transition flex items-center justify-center gap-2"
-            >
-              <FaMapMarkerAlt />
-              Use My Location
-            </button>
-
-            <div>
-              <label className="text-sm font-medium block mb-2">Category</label>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((c) => (
-                  <button
-                    type="button"
-                    key={c}
-                    onClick={() => setCategory(c === category ? "" : c)}
-                    className={`px-3 py-1 rounded-full text-sm border transition ${
-                      category === c ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white border-transparent" : "bg-gray-50 text-gray-700 border-gray-200"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium block mb-2">Sort</label>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition"
-              >
-                <option value="recent">Most recent</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
-              </select>
-            </div>
-
-            <div className="flex gap-2">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Sidebar */}
+          <aside className="col-span-12 md:col-span-3 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800">🔍 Find Services</h3>
               <button
-                type="submit"
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-2 rounded-xl font-medium hover:from-indigo-700 hover:to-blue-700 transition"
+                onClick={() => fetchServices({ category: category || undefined, location: location || undefined, q: query || undefined, sort })}
+                className="text-indigo-600 hover:text-indigo-700 p-2 rounded-full hover:bg-indigo-50 transition transform hover:rotate-180 duration-500"
+                title="Refresh"
               >
-                Search
+                <FaSyncAlt size={20} />
               </button>
+            </div>
+
+            <form onSubmit={onSearch} className="space-y-4">
+              <div className="relative group">
+                <FaSearch className="absolute left-3 top-3 text-indigo-400" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="What service do you need?"
+                  className="pl-10 w-full border-2 border-indigo-200 rounded-xl px-4 py-2 bg-white/50 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                />
+              </div>
+
+              <div className="relative group">
+                <FaMapMarkerAlt className="absolute left-3 top-3 text-purple-400" />
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Location (city / area)"
+                  className="pl-10 w-full border-2 border-purple-200 rounded-xl px-4 py-2 bg-white/50 focus:ring-4 focus:ring-purple-200 focus:border-purple-500 outline-none transition"
+                />
+              </div>
+
               <button
                 type="button"
-                onClick={clearFilters}
-                className="px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition"
+                onClick={useMyLocation}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
               >
-                Clear
+                <FaMapMarkerAlt />
+                📍 Use My Location
               </button>
-            </div>
 
-            <div className="text-xs text-gray-500 pt-2">
-              <div>{loading ? "Loading..." : `${services.length} result${services.length !== 1 ? "s" : ""}`}</div>
-              {lastFetchedAt && <div className="mt-1">Last updated: {lastFetchedAt.toLocaleTimeString()}</div>}
-            </div>
-          </form>
-        </aside>
+              <div className="pt-2">
+                <label className="text-sm font-bold text-gray-800 block mb-3">📂 Category</label>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map((c) => (
+                    <button
+                      type="button"
+                      key={c}
+                      onClick={() => setCategory(c === category ? "" : c)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition transform hover:scale-105 ${
+                        category === c ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-lg" : "bg-white/50 text-gray-700 border-indigo-200 hover:border-indigo-400"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        {/* Main content */}
-        <main className="col-span-12 md:col-span-9 space-y-6">
-          {/* Google Map */}
-          <div className="bg-white rounded-2xl shadow-md mb-2 overflow-hidden border border-gray-100">
+              <div>
+                <label className="text-sm font-bold text-gray-800 block mb-2">⬇️ Sort By</label>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="w-full border-2 border-indigo-200 rounded-xl px-4 py-2 bg-white/50 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition font-medium"
+                >
+                  <option value="recent">Most recent</option>
+                  <option value="price_asc">Price: low to high</option>
+                  <option value="price_desc">Price: high to low</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  🔎 Search
+                </button>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="px-4 py-3 rounded-xl border-2 border-gray-300 bg-white/50 hover:bg-white transition font-semibold text-gray-700"
+                >
+                  ✕ Clear
+                </button>
+              </div>
+
+              <div className="text-xs text-gray-600 pt-3 bg-white/50 rounded-lg p-3 border border-gray-200">
+                <div className="font-semibold">📊 {loading ? "Loading..." : `${services.length} result${services.length !== 1 ? "s" : ""}`}</div>
+                {lastFetchedAt && <div className="mt-1 text-gray-500">Last updated: {lastFetchedAt.toLocaleTimeString()}</div>}
+              </div>
+            </form>
+          </aside>
+
+          {/* Main content */}
+          <main className="col-span-12 md:col-span-9 space-y-6">
+            {/* Google Map */}
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg mb-2 overflow-hidden border border-white/50 hover:shadow-xl transition-all duration-300">
             <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""}>
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
@@ -513,46 +529,53 @@ export default function CustomerPanel() {
             </LoadScript>
           </div>
 
-          {/* Results list */}
-          <section className="bg-white rounded-2xl shadow-md p-4 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-800">Services</h4>
-              <div className="text-sm text-gray-500">
-                {loading ? "Loading..." : `${services.length} found`}
+            {/* Results list */}
+            <section className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-6 border border-white/50 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h4 className="text-2xl font-bold text-gray-800">📋 Available Services</h4>
+                <div className="text-sm font-semibold text-indigo-600 bg-indigo-50/80 px-4 py-2 rounded-full border border-indigo-200">
+                  {loading ? "Loading..." : `${services.length} found`}
+                </div>
               </div>
-            </div>
 
-            {loading && (
-              <div className="min-h-[120px] flex items-center justify-center">
-                <div className="text-gray-600">Loading services…</div>
-              </div>
-            )}
-
-            {!loading && services.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                No services found. Try clearing filters or adjusting your search.
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {services.map((s) => (
-                  <div
-                    key={s.id}
-                    onMouseEnter={() => {
-                      if (s.latitude && s.longitude) {
-                        setMapCenter({
-                          lat: parseFloat(s.latitude),
-                          lng: parseFloat(s.longitude),
-                        });
-                      }
-                    }}
-                  >
-                    <ServiceCard service={s} />
+              {loading && (
+                <div className="min-h-[200px] flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin mx-auto mb-3"></div>
+                    <div className="text-gray-600 font-semibold">Loading services…</div>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </main>
+                </div>
+              )}
+
+              {!loading && services.length === 0 ? (
+                <div className="text-center text-gray-600 py-12">
+                  <div className="text-5xl mb-4">🔍</div>
+                  <p className="text-lg font-semibold mb-2">No services found</p>
+                  <p className="text-sm">Try clearing filters or adjusting your search criteria</p>
+                </div>
+              ) : (
+                <div className="grid gap-5">
+                  {services.map((s) => (
+                    <div
+                      key={s.id}
+                      onMouseEnter={() => {
+                        if (s.latitude && s.longitude) {
+                          setMapCenter({
+                            lat: parseFloat(s.latitude),
+                            lng: parseFloat(s.longitude),
+                          });
+                        }
+                      }}
+                      className="transform transition-all duration-300 hover:scale-102"
+                    >
+                      <ServiceCard service={s} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </main>
+        </div>
       </div>
     </div>
   );
