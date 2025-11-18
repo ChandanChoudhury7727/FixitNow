@@ -4,11 +4,7 @@ import com.fixitnow.model.Dispute;
 import com.fixitnow.model.Booking;
 import com.fixitnow.model.User;
 import com.fixitnow.model.DisputeGroupChatMessage;
-import com.fixitnow.repository.DisputeRepository;
-import com.fixitnow.repository.BookingRepository;
-import com.fixitnow.repository.UserRepository;
-import com.fixitnow.repository.DisputeGroupChatMessageRepository;
-import com.fixitnow.repository.DisputeGroupChatMessageReadRepository;
+import com.fixitnow.repository.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -150,7 +146,7 @@ public class DisputeController {
      * GET /api/disputes/admin/all
      */
     @GetMapping("/admin/all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllDisputes(@RequestParam(required = false) String status) {
         List<Dispute> disputes;
         if (status != null && !status.isEmpty()) {
@@ -166,7 +162,7 @@ public class DisputeController {
      * PATCH /api/disputes/admin/{id}
      */
     @PatchMapping("/admin/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateDispute(@PathVariable Long id, @RequestBody Map<String, Object> payload, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));

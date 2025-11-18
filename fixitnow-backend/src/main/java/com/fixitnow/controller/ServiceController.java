@@ -83,6 +83,8 @@ public class ServiceController {
             m.put("price", s.getPrice());
             m.put("availability", s.getAvailability());
             m.put("location", s.getLocation());
+            m.put("latitude", s.getLatitude());
+            m.put("longitude", s.getLongitude());
             m.put("createdAt", s.getCreatedAt());
             m.put("providerId", s.getProviderId());
             if (distances.containsKey(s.getId())) m.put("distanceKm", distances.get(s.getId()));

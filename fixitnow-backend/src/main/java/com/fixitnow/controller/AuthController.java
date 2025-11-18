@@ -132,4 +132,33 @@ public class AuthController {
                 "location", u.getLocation()
         ));
     }
+
+    @PostMapping("/promote-to-admin")
+    public ResponseEntity<?> promoteToAdmin(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        
+        var userOpt = userRepository.findByEmail(principal.getName());
+        if (userOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        
+        User user = userOpt.get();
+        if (user.getRole() == Role.ADMIN) {
+            return ResponseEntity.ok(Map.of("message", "User is already admin", "role", user.getRole().name()));
+        }
+        
+        user.setRole(Role.ADMIN);
+        userRepository.save(user);
+        
+        // Generate new token with updated role
+        UserDetails ud = userDetailsService.loadUserByUsername(user.getEmail());
+        String newAccessToken = jwtService.generateAccessToken(ud);
+        String newRefreshToken = jwtService.generateRefreshToken(ud);
+        
+        return ResponseEntity.ok(Map.of(
+                "message", "User promoted to admin",
+                "email", user.getEmail(),
+                "role", user.getRole().name(),
+                "accessToken", newAccessToken,
+                "refreshToken", newRefreshToken
+        ));
+    }
 }

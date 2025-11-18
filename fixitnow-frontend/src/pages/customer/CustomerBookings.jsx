@@ -9,18 +9,27 @@ import ServiceChatView from "../../components/ServiceChatView";
 
 function StatusBadge({ status }) {
   const styles = {
-    PENDING: "bg-gradient-to-r from-amber-400 to-yellow-400 text-white shadow-lg shadow-amber-400/40 animate-pulse",
-    CONFIRMED: "bg-gradient-to-r from-emerald-400 to-green-400 text-white shadow-lg shadow-emerald-400/40",
-    COMPLETED: "bg-gradient-to-r from-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-400/40",
-    REJECTED: "bg-gradient-to-r from-rose-400 to-red-400 text-white shadow-lg shadow-rose-400/40",
-    CANCELLED: "bg-gradient-to-r from-slate-400 to-gray-400 text-white shadow-lg shadow-slate-400/40",
+    PENDING: "bg-gradient-to-r from-yellow-400/20 to-amber-400/20 text-yellow-700 border border-yellow-300/50",
+    CONFIRMED: "bg-gradient-to-r from-green-400/20 to-emerald-400/20 text-green-700 border border-green-300/50",
+    COMPLETED: "bg-gradient-to-r from-blue-400/20 to-cyan-400/20 text-blue-700 border border-blue-300/50",
+    REJECTED: "bg-gradient-to-r from-red-400/20 to-rose-400/20 text-red-700 border border-red-300/50",
+    CANCELLED: "bg-gradient-to-r from-gray-400/20 to-slate-400/20 text-gray-700 border border-gray-300/50",
+  };
+
+  const icons = {
+    PENDING: "⏳",
+    CONFIRMED: "✅",
+    COMPLETED: "🎉",
+    REJECTED: "❌",
+    CANCELLED: "🚫",
   };
 
   return (
     <span
-      className={`px-4 py-1.5 rounded-full text-xs font-bold ${styles[status] || styles.PENDING}`}
+      className={`px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2 ${styles[status] || styles.PENDING}`}
       aria-label={`Status: ${status}`}
     >
+      <span>{icons[status]}</span>
       {status}
     </span>
   );
@@ -162,162 +171,228 @@ export default function CustomerBookings() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto mt-8 px-4 mb-8">
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="p-8 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-indigo-500/50">
-                <span className="text-3xl">📋</span>
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  My Bookings & Chats
-                </h2>
-                <p className="text-slate-600 text-sm mt-1">Manage your service bookings and communications</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="text-sm font-medium text-slate-600 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200" aria-live="polite" role="status">
-                {activeTab === "bookings" && (loading ? "Loading..." : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""}`)}
-              </div>
-
-              {activeTab === "bookings" && (
-                <button
-                  onClick={fetchBookings}
-                  className="px-5 py-2.5 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-50 hover:shadow-lg transition-all font-medium text-slate-700 hover:scale-105 transform"
-                  aria-label="Refresh bookings"
-                >
-                  🔄 Refresh
-                </button>
-              )}
-
-              <button
-                onClick={() => setActiveTab("service-chats")}
-                className="relative px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all font-bold shadow-lg shadow-indigo-500/40 hover:shadow-xl hover:scale-105 transform"
-                aria-label="View service chats"
-              >
-                💬 Service Chats
-                {totalUnreadChats > 0 && (
-                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce shadow-lg">
-                    {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+            My Bookings
+          </h1>
+          <p className="text-gray-600 text-lg">Manage your service bookings and communicate with providers</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-slate-200 bg-slate-50">
-          <button
-            onClick={() => setActiveTab("bookings")}
-            className={`flex-1 px-6 py-4 font-bold transition-all duration-300 relative ${
-              activeTab === "bookings"
-                ? "text-indigo-700 bg-white shadow-sm"
-                : "text-slate-600 hover:text-indigo-600 hover:bg-white/50"
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-xl">📋</span>
-              <span>My Bookings</span>
-            </span>
-            {activeTab === "bookings" && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-t-full"></div>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("service-chats")}
-            className={`flex-1 px-6 py-4 font-bold transition-all duration-300 relative ${
-              activeTab === "service-chats"
-                ? "text-indigo-700 bg-white shadow-sm"
-                : "text-slate-600 hover:text-indigo-600 hover:bg-white/50"
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-xl">💬</span>
-              <span>Service Chats</span>
+        {/* Main Card */}
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="p-8 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-slate-100">
+            <div className="flex justify-between items-center flex-wrap gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Bookings Dashboard</h2>
+                <p className="text-gray-600 text-sm mt-1">Track and manage all your service bookings</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-gray-600 bg-white px-4 py-2 rounded-full border border-gray-200" aria-live="polite" role="status">
+                  {activeTab === "bookings" && (loading ? "Loading..." : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""}`)}
+                </div>
+
+                {activeTab === "bookings" && (
+                  <button
+                    onClick={fetchBookings}
+                    className="px-4 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 transition font-medium text-gray-700 hover:text-gray-900"
+                    aria-label="Refresh bookings"
+                  >
+                    🔄 Refresh
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setActiveTab("service-chats")}
+                  className="relative px-6 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition font-semibold shadow-lg hover:shadow-xl"
+                  aria-label="View service chats"
+                >
+                  💬 Service Chats
+                  {totalUnreadChats > 0 && (
+                    <span className="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                      {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b bg-gray-50">
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={`flex-1 px-6 py-4 font-semibold transition-all ${
+                activeTab === "bookings"
+                  ? "border-b-4 border-indigo-600 text-indigo-700 bg-white"
+                  : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100"
+              }`}
+            >
+              📋 My Bookings
+            </button>
+            <button
+              onClick={() => setActiveTab("service-chats")}
+              className={`flex-1 px-6 py-4 font-semibold transition-all relative ${
+                activeTab === "service-chats"
+                  ? "border-b-4 border-indigo-600 text-indigo-700 bg-white"
+                  : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100"
+              }`}
+            >
+              💬 Service Chats
               {totalUnreadChats > 0 && (
-                <span className="w-6 h-6 bg-rose-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg ml-2">
+                <span className="absolute top-2 right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
                   {totalUnreadChats > 9 ? "9+" : totalUnreadChats}
                 </span>
               )}
-            </span>
-            {activeTab === "service-chats" && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-t-full"></div>
+            </button>
+          </div>
+
+          <div className="p-8">
+            {infoMessage && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl text-green-700 font-semibold" role="status">
+                ✅ {infoMessage}
+              </div>
             )}
-          </button>
-        </div>
 
-        <div className="p-8">
-          {infoMessage && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 rounded-2xl text-emerald-800 font-semibold flex items-center gap-3 animate-fade-in shadow-lg" role="status">
-              <span className="text-2xl">✅</span>
-              <span>{infoMessage}</span>
-            </div>
-          )}
-
-          {/* Bookings Tab */}
-          {activeTab === "bookings" && (
-            <>
-              {bookings.length === 0 ? (
-                <div className="text-center py-16 bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl border-2 border-dashed border-slate-300">
-                  <div className="text-7xl mb-6 animate-bounce">📋</div>
-                  <p className="text-2xl font-bold text-slate-800 mb-2">No bookings yet</p>
-                  <p className="text-slate-600 mb-6">Browse services and make your first booking!</p>
-                  <a
-                    href="/customer-panel"
-                    className="inline-block bg-gradient-to-r from-emerald-500 to-green-500 text-white px-8 py-4 rounded-2xl hover:from-emerald-600 hover:to-green-600 transition-all font-bold shadow-lg shadow-emerald-500/40 hover:shadow-xl transform hover:scale-105"
-                  >
-                    🔍 Browse Services
-                  </a>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {bookings.map((booking) => {
-                    const review = bookingReviews[booking.id];
-                    const isBusy = busyId === booking.id;
-                    return (
-                      <div 
-                        key={booking.id} 
-                        className="bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200 rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.01] hover:border-indigo-300"
-                      >
-                        <div className="flex flex-col lg:flex-row justify-between gap-6">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
-                                <span className="text-2xl">🛠️</span>
-                              </div>
-                              <div>
-                                <h3 className="font-bold text-xl text-slate-800">Service #{booking.serviceId}</h3>
+            {/* Bookings Tab */}
+            {activeTab === "bookings" && (
+              <>
+                {bookings.length === 0 ? (
+                  <div className="text-center py-16 text-gray-500">
+                    <div className="text-6xl mb-6">📋</div>
+                    <p className="text-2xl font-semibold mb-2">No bookings yet</p>
+                    <p className="text-lg mb-8">Browse services and make your first booking!</p>
+                    <a
+                      href="/customer-panel"
+                      className="inline-block bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition font-semibold shadow-lg hover:shadow-xl"
+                    >
+                      🔍 Browse Services
+                    </a>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    {bookings.map((booking) => {
+                      const review = bookingReviews[booking.id];
+                      const isBusy = busyId === booking.id;
+                      return (
+                        <div key={booking.id} className="bg-gradient-to-br from-white to-slate-50 border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:border-indigo-200">
+                          <div className="flex justify-between items-start gap-6 flex-col lg:flex-row">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-4 mb-4 flex-wrap">
+                                <div>
+                                  <h3 className="font-bold text-xl text-gray-800">Service #{booking.serviceId}</h3>
+                                  <p className="text-sm text-gray-500">Provider ID: {booking.providerId}</p>
+                                </div>
                                 <StatusBadge status={booking.status} />
                               </div>
+
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                                <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                                  <p className="text-xs text-indigo-600 font-semibold">📅 Date</p>
+                                  <p className="text-sm font-semibold text-gray-800">
+                                    {booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : "N/A"}
+                                  </p>
+                                </div>
+                                <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
+                                  <p className="text-xs text-purple-600 font-semibold">🕐 Time</p>
+                                  <p className="text-sm font-semibold text-gray-800">{booking.timeSlot || "N/A"}</p>
+                                </div>
+                                <div className="bg-pink-50 rounded-lg p-3 border border-pink-100">
+                                  <p className="text-xs text-pink-600 font-semibold">📍 Location</p>
+                                  <p className="text-sm font-semibold text-gray-800">Service</p>
+                                </div>
+                              </div>
+
+                              {booking.notes && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                  <p className="text-sm text-blue-900"><strong>📝 Notes:</strong> {booking.notes}</p>
+                                </div>
+                              )}
+
+                              {/* Show review if exists */}
+                              {review && (
+                                <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span className="font-bold text-yellow-800">⭐ Your Review</span>
+                                    <div className="flex gap-1">
+                                      {[...Array(5)].map((_, i) => (
+                                        <span key={i} className={`text-lg ${i < review.rating ? "text-yellow-400" : "text-gray-300"}`}>★</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-2">{review.comment || "No comment"}</p>
+                                  <p className="text-xs text-gray-500">Reviewed on: {new Date(review.createdAt).toLocaleDateString()}</p>
+                                </div>
+                              )}
+
+                              <p className="text-xs text-gray-400 mt-4">
+                                Booked on: {booking.createdAt ? new Date(booking.createdAt).toLocaleString() : "N/A"}
+                              </p>
                             </div>
 
-                            <div className="space-y-2 text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                              <p className="flex items-center gap-2">
-                                <span className="font-bold text-slate-700">📅 Date:</span>
-                                <span className="text-slate-600">{booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : "N/A"}</span>
-                              </p>
-                              <p className="flex items-center gap-2">
-                                <span className="font-bold text-slate-700">⏰ Time:</span>
-                                <span className="text-slate-600">{booking.timeSlot || "N/A"}</span>
-                              </p>
-                              <p className="flex items-center gap-2">
-                                <span className="font-bold text-slate-700">👨‍🔧 Provider:</span>
-                                <span className="text-slate-600">#{booking.providerId}</span>
-                              </p>
-                              {booking.notes && (
-                                <p className="flex items-start gap-2">
-                                  <span className="font-bold text-slate-700">📝 Notes:</span>
-                                  <span className="text-slate-600">{booking.notes}</span>
-                                </p>
+                            <div className="flex flex-col gap-3 lg:w-48">
+                              {/* Chat button */}
+                              {(booking.status === "PENDING" ||
+                                booking.status === "CONFIRMED" ||
+                                booking.status === "COMPLETED") && (
+                                <button
+                                  onClick={() => handleOpenChat(booking.providerId)}
+                                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:from-purple-600 hover:to-pink-600 transition font-semibold shadow-md hover:shadow-lg"
+                                  aria-label={`Chat with provider ${booking.providerId}`}
+                                >
+                                  💬 Chat
+                                </button>
                               )}
-                              <p className="text-xs text-slate-400 pt-2 border-t border-slate-200">
-                                🕐 Booked on: {booking.createdAt ? new Date(booking.createdAt).toLocaleString() : "N/A"}
-                              </p>
+
+                              {/* Cancel and Mark Complete buttons */}
+                              {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
+                                <>
+                                  <button
+                                    onClick={() => handleCancel(booking.id)}
+                                    disabled={isBusy}
+                                    className="bg-gradient-to-r from-red-500 to-rose-500 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold shadow-md hover:shadow-lg"
+                                    aria-label={`Cancel booking ${booking.id}`}
+                                  >
+                                    {isBusy ? "Canceling…" : "❌ Cancel"}
+                                  </button>
+
+                                  {booking.status === "CONFIRMED" && (
+                                    <button
+                                      onClick={() => handleMarkComplete(booking.id)}
+                                      disabled={isBusy}
+                                      className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold shadow-md hover:shadow-lg"
+                                      aria-label={`Mark booking ${booking.id} as complete`}
+                                    >
+                                      {isBusy ? "Updating…" : "✓ Complete"}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+
+                              {/* Leave Review button */}
+                              {booking.status === "COMPLETED" && !review && (
+                                <button
+                                  onClick={() => setReviewBooking(booking)}
+                                  className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition font-semibold shadow-md hover:shadow-lg"
+                                  aria-label={`Leave review for booking ${booking.id}`}
+                                >
+                                  ⭐ Review
+                                </button>
+                              )}
+
+                              {/* Report Issue button */}
+                              {booking.status === "COMPLETED" && (
+                                <button
+                                  onClick={() => setDisputeBooking(booking)}
+                                  className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-red-600 transition font-semibold shadow-md hover:shadow-lg"
+                                  aria-label={`Report issue for booking ${booking.id}`}
+                                >
+                                  🚨 Report
+                                </button>
+                              )}
                             </div>
 
                             {/* Show review if exists */}
@@ -400,20 +475,18 @@ export default function CustomerBookings() {
                             )}
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </>
-          )}
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
 
-          {/* Service Chats Tab */}
-          {activeTab === "service-chats" && (
-            <div className="animate-fade-in">
+            {/* Service Chats Tab */}
+            {activeTab === "service-chats" && (
               <ServiceChatView />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

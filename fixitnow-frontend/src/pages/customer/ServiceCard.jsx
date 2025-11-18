@@ -28,11 +28,30 @@ export default function ServiceCard({ service }) {
 
     try {
       setSubmitting(true);
+      
+      // Get customer's current location
+      let customerLatitude = null;
+      let customerLongitude = null;
+      
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
+          });
+          customerLatitude = position.coords.latitude;
+          customerLongitude = position.coords.longitude;
+        } catch (err) {
+          console.warn("Could not get user location:", err);
+        }
+      }
+      
       const payload = {
         serviceId: service.id,
         bookingDate: bookingForm.bookingDate,
         timeSlot: bookingForm.timeSlot,
-        notes: bookingForm.notes
+        notes: bookingForm.notes,
+        customerLatitude,
+        customerLongitude
       };
 
       const res = await api.post("/api/bookings", payload);
@@ -65,77 +84,90 @@ export default function ServiceCard({ service }) {
   ];
 
   return (
-    <article className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
-      <div className="flex justify-between items-start">
-        <div className="flex-1 pr-4">
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <h5 className="font-semibold text-lg text-gray-800">
-              {service.category} {service.subcategory ? `· ${service.subcategory}` : ""}
-            </h5>
-            <span className="text-sm text-gray-500 flex items-center gap-1">
-              by <span className="font-medium text-gray-700">{service.providerName || `Provider #${service.providerId}`}</span>
-              {service.providerVerified && (
-                <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full" title="Verified Provider">
-                  ✓ Verified
-                </span>
+    <article className="bg-gradient-to-br from-white to-slate-50 border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:border-indigo-300 hover:-translate-y-1">
+      <div className="flex justify-between items-start gap-6 flex-col sm:flex-row">
+        <div className="flex-1">
+          <div className="flex items-start gap-3 mb-3 flex-wrap">
+            <div>
+              <h5 className="font-bold text-lg text-gray-900">
+                {service.category}
+              </h5>
+              {service.subcategory && (
+                <p className="text-sm text-gray-600">{service.subcategory}</p>
               )}
-            </span>
+            </div>
+            {service.providerVerified && (
+              <span className="inline-flex items-center gap-1 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full border border-blue-200" title="Verified Provider">
+                ✓ Verified
+              </span>
+            )}
           </div>
 
-          <p className="text-gray-700 mt-2 text-sm">
-            {service.description ? service.description.substring(0, 140) : "No description"}
-            {service.description?.length > 140 && "..."}
+          <p className="text-gray-700 mt-3 text-sm leading-relaxed">
+            {service.description ? service.description.substring(0, 150) : "Professional service available"}
+            {service.description?.length > 150 && "..."}
           </p>
 
-          <div className="text-sm text-gray-500 mt-2 flex items-center gap-4">
-            <span>📍 {service.location || "N/A"}</span>
+          <div className="flex flex-wrap gap-3 mt-4">
+            <div className="bg-indigo-50 rounded-lg px-3 py-2 border border-indigo-100">
+              <p className="text-xs text-indigo-600 font-semibold">📍 Location</p>
+              <p className="text-sm font-semibold text-gray-800">{service.location || "N/A"}</p>
+            </div>
             {service.distanceKm != null && (
-              <span className="text-indigo-700">🚗 {Number(service.distanceKm).toFixed(1)} km away</span>
+              <div className="bg-purple-50 rounded-lg px-3 py-2 border border-purple-100">
+                <p className="text-xs text-purple-600 font-semibold">🚗 Distance</p>
+                <p className="text-sm font-semibold text-gray-800">{Number(service.distanceKm).toFixed(1)} km</p>
+              </div>
             )}
+          </div>
+
+          <div className="mt-4 text-xs text-gray-500">
+            by <span className="font-semibold text-gray-700">{service.providerName || `Provider #${service.providerId}`}</span>
           </div>
         </div>
 
-        <div className="text-right ml-4 flex flex-col items-end">
-          <div className="text-xl font-semibold text-green-700">
-            {service.price != null ? `₹${service.price}` : "—"}
+        <div className="flex flex-col items-end gap-4 sm:w-auto">
+          <div className="text-center">
+            <p className="text-xs text-gray-600 font-semibold mb-1">Starting from</p>
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              {service.price != null ? `₹${service.price}` : "—"}
+            </div>
           </div>
-          <div className="mt-3">
-            <button
-              onClick={() => setShowBooking((s) => !s)}
-              className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:from-indigo-700 hover:to-blue-700 shadow-sm transition"
-              aria-expanded={showBooking}
-              aria-controls={`booking-form-${service.id}`}
-            >
-              Book Now
-            </button>
-          </div>
+          <button
+            onClick={() => setShowBooking((s) => !s)}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 whitespace-nowrap"
+            aria-expanded={showBooking}
+            aria-controls={`booking-form-${service.id}`}
+          >
+            📅 Book Now
+          </button>
         </div>
       </div>
 
       {showBooking && (
-        <section id={`booking-form-${service.id}`} className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100" aria-labelledby={`book-heading-${service.id}`}>
-          <h6 id={`book-heading-${service.id}`} className="font-semibold mb-3 text-gray-800">Book this Service</h6>
+        <section id={`booking-form-${service.id}`} className="mt-6 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200" aria-labelledby={`book-heading-${service.id}`}>
+          <h6 id={`book-heading-${service.id}`} className="font-bold text-lg mb-4 text-gray-900">📅 Complete Your Booking</h6>
 
-          <form onSubmit={handleBook} className="space-y-3" aria-live="polite">
+          <form onSubmit={handleBook} className="space-y-4" aria-live="polite">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Date</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-800">Select Date</label>
               <input
                 type="date"
                 required
                 min={new Date().toISOString().split('T')[0]}
                 value={bookingForm.bookingDate}
                 onChange={(e) => setBookingForm({ ...bookingForm, bookingDate: e.target.value })}
-                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition"
+                className="w-full border-2 border-indigo-300 rounded-xl px-4 py-2 bg-white focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Time Slot</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-800">Choose Time Slot</label>
               <select
                 required
                 value={bookingForm.timeSlot}
                 onChange={(e) => setBookingForm({ ...bookingForm, timeSlot: e.target.value })}
-                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition"
+                className="w-full border-2 border-indigo-300 rounded-xl px-4 py-2 bg-white focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition font-medium"
               >
                 {timeSlots.map(slot => (
                   <option key={slot} value={slot}>{slot}</option>
@@ -144,32 +176,32 @@ export default function ServiceCard({ service }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">
-                Additional Notes (optional)
+              <label className="block text-sm font-semibold mb-2 text-gray-800">
+                📝 Additional Notes (optional)
               </label>
               <textarea
                 value={bookingForm.notes}
                 onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                placeholder="Describe your requirements..."
-                className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition"
+                placeholder="Describe your specific requirements or preferences..."
+                className="w-full border-2 border-indigo-300 rounded-xl px-4 py-2 bg-white focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition font-medium"
                 rows={3}
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-2">
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-2 rounded-xl font-medium hover:from-indigo-700 hover:to-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg hover:shadow-xl transform hover:scale-105"
                 aria-label={`Confirm booking for service ${service.id}`}
               >
-                {submitting ? "Sending…" : "Confirm Booking"}
+                {submitting ? "Processing…" : "✓ Confirm Booking"}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowBooking(false)}
-                className="px-4 py-2 border rounded-xl hover:bg-gray-100 transition"
+                className="px-6 py-3 border-2 border-gray-300 rounded-xl hover:bg-white transition font-semibold text-gray-700"
               >
                 Cancel
               </button>
@@ -179,13 +211,13 @@ export default function ServiceCard({ service }) {
           {message && (
             <div
               role="status"
-              className={`mt-3 p-3 rounded text-sm ${
+              className={`mt-4 p-4 rounded-xl text-sm font-semibold border-2 ${
                 message.type === "success"
-                  ? "bg-green-50 border border-green-200 text-green-800"
-                  : "bg-red-50 border border-red-200 text-red-800"
+                  ? "bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 text-green-800"
+                  : "bg-gradient-to-r from-red-50 to-rose-50 border-red-300 text-red-800"
               }`}
             >
-              {message.text}
+              {message.type === "success" ? "✅" : "❌"} {message.text}
             </div>
           )}
         </section>

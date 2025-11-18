@@ -48,13 +48,11 @@ function Sidebar({ active, setActive, unreadCount }) {
   };
 
   return (
-    <aside className="w-full md:w-72 bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl shadow-xl p-6 border border-slate-200 sticky top-6 h-fit">
-      <div className="mb-6">
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-          Provider Panel
-        </h3>
-        <p className="text-sm text-slate-600">Manage your services & bookings</p>
-      </div>
+    <aside className="w-full md:w-64 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-5 border border-white/50 hover:shadow-xl transition-all duration-300">
+      <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+        <span className="text-xl">🏢</span>
+        <span>Provider Panel</span>
+      </h3>
       <nav className="space-y-2" aria-label="Provider panel navigation">
         {TABS.map((tab) => (
           <button
@@ -69,10 +67,7 @@ function Sidebar({ active, setActive, unreadCount }) {
             aria-label={`Open ${tab}`}
           >
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-3 font-medium">
-                <span className="text-xl">{icons[tab]}</span>
-                <span>{tab}</span>
-              </span>
+              <span className="font-medium">{tab}</span>
               {tab === "Service Chats" && unreadCount > 0 && (
                 <span className="bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse shadow-lg">
                   {unreadCount > 9 ? "9+" : unreadCount}
@@ -767,7 +762,18 @@ function BookingsPane({ setChatCustomer }) {
               </span>
             </div>
 
-            <div className="flex gap-3 mt-5">
+            <div className="flex gap-2 mt-3">
+              {b.customerLatitude && b.customerLongitude && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${b.customerLatitude},${b.customerLongitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-xl hover:from-red-600 hover:to-orange-600 transition flex items-center gap-1"
+                  title="Open customer location in Google Maps"
+                >
+                  🗺️ Maps
+                </a>
+              )}
               <button
                 onClick={() => setChatCustomer({ id: b.customerId, name: customer?.name || `Customer #${b.customerId}` })}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-5 py-2.5 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all font-bold shadow-lg shadow-purple-500/30"
@@ -950,11 +956,27 @@ export default function ProviderPanel() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-purple-50 py-10">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex gap-8">
-          {/* Sidebar - Fixed width and sticky positioning */}
-          <div className="flex-shrink-0">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Provider Dashboard
+            </h1>
+            <p className="text-gray-600 mt-1">Manage your profile, services, bookings, and reviews in one place.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <div className="col-span-1">
             <Sidebar active={active} setActive={setActive} unreadCount={totalUnreadChats} />
           </div>
           
@@ -971,7 +993,11 @@ export default function ProviderPanel() {
       </div>
 
       {chatCustomer && (
-        <ChatWindow receiverId={chatCustomer.id} receiverName={chatCustomer.name} onClose={() => setChatCustomer(null)} />
+        <ChatWindow
+          receiverId={chatCustomer.id}
+          receiverName={chatCustomer.name}
+          onClose={() => setChatCustomer(null)}
+        />
       )}
     </div>
   );

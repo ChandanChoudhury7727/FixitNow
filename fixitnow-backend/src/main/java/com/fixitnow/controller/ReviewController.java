@@ -83,6 +83,12 @@ public class ReviewController {
                 "reviewId", saved.getId()
             ));
 
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Handle unique constraint violation (one review per booking)
+            if (e.getMessage().contains("UK_REVIEW_BOOKING_ID") || e.getMessage().contains("booking_id")) {
+                return ResponseEntity.status(409).body(Map.of("error", "You have already reviewed this booking. One review per booking is allowed."));
+            }
+            return ResponseEntity.status(409).body(Map.of("error", "Database constraint violation: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid request: " + e.getMessage()));
         }

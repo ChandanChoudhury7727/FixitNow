@@ -54,21 +54,22 @@
 
 //     public LocalDateTime getCreatedAt() { return createdAt; }
 //     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-// }
 package com.fixitnow.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "reviews", uniqueConstraints = {
+    @UniqueConstraint(columnNames = "booking_id", name = "UK_REVIEW_BOOKING_ID")
+})
 public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "booking_id", nullable = false)
+    @Column(name = "booking_id", nullable = false, unique = true)
     private Long bookingId;
 
     @Column(name = "customer_id", nullable = false)
@@ -77,7 +78,7 @@ public class Review {
     @Column(name = "provider_id", nullable = false)
     private Long providerId;
 
-    @Column(name = "service_id") // ✅ ADD THIS FIELD
+    @Column(name = "service_id")
     private Long serviceId;
 
     private Integer rating;
@@ -93,7 +94,6 @@ public class Review {
         this.createdAt = LocalDateTime.now();
     }
 
-    // ✅ ADD GETTER AND SETTER FOR SERVICE_ID
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
