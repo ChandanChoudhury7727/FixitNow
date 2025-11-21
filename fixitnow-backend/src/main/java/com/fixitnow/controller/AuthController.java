@@ -6,6 +6,7 @@ import com.fixitnow.model.Role;
 import com.fixitnow.model.User;
 import com.fixitnow.repository.UserRepository;
 import com.fixitnow.service.JwtService;
+import com.fixitnow.service.TokenBlacklistService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,17 +26,20 @@ public class AuthController {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final org.springframework.security.core.userdetails.UserDetailsService userDetailsService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepository userRepository,
                           BCryptPasswordEncoder passwordEncoder,
                           JwtService jwtService,
-                          org.springframework.security.core.userdetails.UserDetailsService userDetailsService) {
+                          org.springframework.security.core.userdetails.UserDetailsService userDetailsService,
+                          TokenBlacklistService tokenBlacklistService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @PostMapping("/register")
@@ -160,5 +164,14 @@ public class AuthController {
                 "accessToken", newAccessToken,
                 "refreshToken", newRefreshToken
         ));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(name = "Authorization", required = false) String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.blacklist(token);
+        }
+        return ResponseEntity.ok(Map.of("message", "Logged out"));
     }
 }
