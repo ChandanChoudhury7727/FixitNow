@@ -1,6 +1,7 @@
 // src/components/NavBar.jsx
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import api from "../api/axiosInstance";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -16,7 +17,12 @@ export default function NavBar() {
   const isProviderSection = pathname.startsWith("/provider");
   const isAdminSection = pathname.startsWith("/admin-dashboard");
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } catch (e) {
+      // ignore errors on logout
+    }
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("role");

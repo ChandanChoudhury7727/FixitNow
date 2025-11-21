@@ -129,16 +129,16 @@ export default function Home() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mt-16 max-w-2xl mx-auto">
             <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
-              <div className="text-2xl font-bold text-indigo-400">500+</div>
-              <div className="text-sm text-gray-400">Professionals</div>
+              <div className="text-2xl font-bold text-indigo-400">New App</div>
+              <div className="text-sm text-gray-400">Starting with trusted local experts</div>
             </div>
             <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
-              <div className="text-2xl font-bold text-purple-400">10K+</div>
-              <div className="text-sm text-gray-400">Happy Customers</div>
+              <div className="text-2xl font-bold text-purple-400">सुरक्षित बुकिंग</div>
+              <div className="text-sm text-gray-400">Safe payments & clear tracking</div>
             </div>
             <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
-              <div className="text-2xl font-bold text-pink-400">4.8★</div>
-              <div className="text-sm text-gray-400">Average Rating</div>
+              <div className="text-2xl font-bold text-pink-400">Real Support</div>
+              <div className="text-sm text-gray-400">Chat with us whenever you need help</div>
             </div>
           </div>
         </div>

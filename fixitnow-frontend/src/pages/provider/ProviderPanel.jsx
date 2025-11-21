@@ -4,38 +4,9 @@ import React, { useEffect, useState } from "react";
 import api from "../../api/axiosInstance";
 import ChatWindow from "../../components/ChatWindow";
 import ServiceChatView from "../../components/ServiceChatView";
+import { reverseGeocodeLatLng } from "../../utils/googleLocation";
 
 const TABS = ["Profile", "Services", "Offer Service", "Bookings", "Reviews", "Service Chats"];
-
-// helper: reverse geocode using OpenStreetMap Nominatim
-async function reverseGeocode(lat, lon) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
-      lat
-    )}&lon=${encodeURIComponent(lon)}`;
-    const res = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    if (!res.ok) throw new Error("Reverse geocoding failed");
-    const data = await res.json();
-    return (
-      data.display_name ||
-      [
-        data.address?.neighbourhood,
-        data.address?.suburb,
-        data.address?.city,
-        data.address?.state,
-      ]
-        .filter(Boolean)
-        .join(", ") ||
-      ""
-    );
-  } catch (e) {
-    return "";
-  }
-}
 
 function Sidebar({ active, setActive, unreadCount }) {
   return (
@@ -75,7 +46,7 @@ function Sidebar({ active, setActive, unreadCount }) {
 // Profile pane
 function ProfilePane() {
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ categories: [], description: "", location: "" });
+  const [form, setForm] = useState({ categories: [], description: "", location: "", latitude: null, longitude: null });
   const [verificationStatus, setVerificationStatus] = useState("PENDING");
   const [verificationNotes, setVerificationNotes] = useState("");
   const [documentUrl, setDocumentUrl] = useState("");
@@ -91,6 +62,8 @@ function ProfilePane() {
             categories: Array.isArray(res.data.categories) ? res.data.categories : [],
             description: res.data.description || "",
             location: res.data.location || "",
+            latitude: null,
+            longitude: null,
           });
           setVerificationStatus(res.data.verificationStatus || "PENDING");
           setVerificationNotes(res.data.verificationNotes || "");
@@ -135,8 +108,23 @@ function ProfilePane() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        const human = await reverseGeocode(latitude, longitude);
-        setForm((f) => ({ ...f, location: human || `${latitude}, ${longitude}` }));
+        try {
+          const human = await reverseGeocodeLatLng(latitude, longitude);
+          setForm((f) => ({
+            ...f,
+            location: human || "Location captured near you",
+            latitude,
+            longitude,
+          }));
+        } catch (e) {
+          console.error("Reverse geocoding failed", e);
+          setForm((f) => ({
+            ...f,
+            location: "Location captured near you",
+            latitude,
+            longitude,
+          }));
+        }
         setLocLoading(false);
       },
       (err) => {
@@ -330,7 +318,17 @@ function ServicesPane() {
   };
 
   const CreateForm = ({ onClose }) => {
-    const [form, setForm] = useState({ category: "", subcategory: "", description: "", price: "", availability: [], location: "" });
+    const [form, setForm] = useState({
+      category: "",
+      subcategory: "",
+      description: "",
+      price: "",
+      availability: [],
+      // location is the human-readable locationName
+      location: "",
+      latitude: null,
+      longitude: null,
+    });
     const [locLoading, setLocLoading] = useState(false);
 
     const submit = async () => {
@@ -342,6 +340,8 @@ function ServicesPane() {
           price: form.price ? Number(form.price) : null,
           availability: form.availability,
           location: form.location,
+          latitude: form.latitude,
+          longitude: form.longitude,
         });
         onClose();
         fetch();
@@ -359,8 +359,23 @@ function ServicesPane() {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
-          const human = await reverseGeocode(latitude, longitude);
-          setForm((f) => ({ ...f, location: human || `${latitude}, ${longitude}` }));
+          try {
+            const human = await reverseGeocodeLatLng(latitude, longitude);
+            setForm((f) => ({
+              ...f,
+              location: human || "Location captured near you",
+              latitude,
+              longitude,
+            }));
+          } catch (e) {
+            console.error("Reverse geocoding failed", e);
+            setForm((f) => ({
+              ...f,
+              location: "Location captured near you",
+              latitude,
+              longitude,
+            }));
+          }
           setLocLoading(false);
         },
         (err) => {
@@ -496,7 +511,16 @@ function ServicesPane() {
 
 // Offer Service pane
 function OfferServicePane() {
-  const [form, setForm] = useState({ category: "", subcategory: "", description: "", price: "", location: "" });
+  const [form, setForm] = useState({
+    category: "",
+    subcategory: "",
+    description: "",
+    price: "",
+    // location is the human-readable locationName
+    location: "",
+    latitude: null,
+    longitude: null,
+  });
   const [msg, setMsg] = useState("");
   const [locLoading, setLocLoading] = useState(false);
 
@@ -508,6 +532,8 @@ function OfferServicePane() {
         description: form.description,
         price: form.price ? Number(form.price) : null,
         location: form.location,
+        latitude: form.latitude,
+        longitude: form.longitude,
       });
       setMsg("Service created ✅");
       setForm({ category: "", subcategory: "", description: "", price: "", location: "" });
@@ -527,7 +553,12 @@ function OfferServicePane() {
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         const human = await reverseGeocode(latitude, longitude);
-        setForm((f) => ({ ...f, location: human || `${latitude}, ${longitude}` }));
+        setForm((f) => ({
+          ...f,
+          location: human || "Location captured near you",
+          latitude,
+          longitude,
+        }));
         setLocLoading(false);
       },
       (err) => {

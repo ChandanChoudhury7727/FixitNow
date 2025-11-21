@@ -279,6 +279,7 @@ import api from "../../api/axiosInstance";
 import ServiceCard from "./ServiceCard";
 import { FaSearch, FaMapMarkerAlt, FaSyncAlt } from "react-icons/fa";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
+import { reverseGeocodeLatLng } from "../../utils/googleLocation";
 
 const CATEGORIES = ["Electrician", "Plumber", "Carpenter", "Cleaning", "Appliance"];
 
@@ -294,6 +295,7 @@ const defaultCenter = {
 
 export default function CustomerPanel() {
   const [query, setQuery] = useState("");
+  // location is the human-readable locationName used for filtering
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
   const [services, setServices] = useState([]);
@@ -339,7 +341,7 @@ export default function CustomerPanel() {
     fetchServices({});
   };
 
-  // Get user's current location
+  // Get user's current location (lat/lng) and a readable name via Google Maps
   const useMyLocation = () => {
     if (!navigator.geolocation) {
       alert("Geolocation not supported by your browser");
@@ -347,12 +349,21 @@ export default function CustomerPanel() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
         const newCenter = { lat: latitude, lng: longitude };
         setMapCenter(newCenter);
-        
-        // Fetch services near this location
+
+        try {
+          const place = await reverseGeocodeLatLng(latitude, longitude);
+          if (place) {
+            setLocation(place);
+          }
+        } catch (e) {
+          console.error("Reverse geocoding failed", e);
+        }
+
+        // Fetch services near this location using numeric lat/lng
         fetchServices({
           lat: latitude,
           lng: longitude,

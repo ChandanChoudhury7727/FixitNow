@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import api from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import { reverseGeocodeLatLng } from "../utils/googleLocation";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -10,7 +11,10 @@ export default function Register() {
     email: "",
     password: "",
     role: "CUSTOMER",
+    // location is the human-readable locationName
     location: "",
+    latitude: null,
+    longitude: null,
   });
   const [msg, setMsg] = useState("");
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -18,41 +22,73 @@ export default function Register() {
 
   const captureLocation = async () => {
     if (!navigator.geolocation) {
-      setMsg("❌ Geolocation not supported");
+      setMsg("❌ Geolocation not supported by your browser");
       return;
     }
+
     setLoadingLocation(true);
+    setMsg("🔄 Detecting your location (this may take a moment)...");
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        console.log("Location captured:", pos.coords);
-        const coords = `${pos.coords.latitude},${pos.coords.longitude}`;
-        try {
-          // Reverse geocode using Nominatim
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
-          );
-          const data = await res.json();
-          const place =
-            data?.address?.city ||
-            data?.address?.town ||
-            data?.address?.village ||
-            data?.display_name ||
-            coords;
+        const { latitude, longitude, accuracy } = pos.coords;
 
-          setForm((f) => ({ ...f, location: place }));
-          setMsg("📍 Location captured: " + place);
+        if (accuracy && accuracy > 5000) {
+          setMsg(
+            "⚠️ Approximate location detected. For better accuracy, please try again or edit the location name."
+          );
+        }
+
+        try {
+          const locationName = await reverseGeocodeLatLng(latitude, longitude);
+
+          setForm((f) => ({
+            ...f,
+            location: locationName,
+            latitude,
+            longitude,
+          }));
+
+          setMsg(`📍 Detected: ${locationName}`);
         } catch (err) {
-          setForm((f) => ({ ...f, location: coords }));
-          setMsg("⚠️ Location (coords only): " + coords);
+          console.error("Error reverse geocoding with Google:", err);
+          setForm((f) => ({
+            ...f,
+            location: "Location near you",
+            latitude,
+            longitude,
+          }));
+          setMsg("📍 Location captured (could not resolve exact address)");
         } finally {
           setLoadingLocation(false);
         }
       },
       (err) => {
-        setMsg("❌ Location error: " + err.message);
+        let errorMsg = "❌ Could not detect your location. ";
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            errorMsg +=
+              "Please enable location access in your browser settings or enter your location manually.";
+            break;
+          case err.POSITION_UNAVAILABLE:
+            errorMsg +=
+              "Location information is unavailable. Please try again or enter your location manually.";
+            break;
+          case err.TIMEOUT:
+            errorMsg +=
+              "Location request timed out. Please try again or enter your location manually.";
+            break;
+          default:
+            errorMsg += "Please enter your location manually.";
+        }
+        setMsg(errorMsg);
         setLoadingLocation(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      }
     );
   };
 
@@ -63,7 +99,15 @@ export default function Register() {
       return;
     }
     try {
-      await api.post("/api/auth/register", form);
+      await api.post("/api/auth/register", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        location: form.location,
+        latitude: form.latitude,
+        longitude: form.longitude,
+      });
       setMsg("✅ Registered successfully. Please login.");
       nav("/login");
     } catch (err) {
@@ -230,11 +274,6 @@ export default function Register() {
                       </div>
                     )}
                   </div>
-                  {form.location && form.location.includes(",") && (
-                    <div className="text-xs text-gray-500 bg-amber-50 border border-amber-200 rounded-lg p-2">
-                      📍 Coordinates captured. You can edit below if needed.
-                    </div>
-                  )}
                   {form.location && (
                     <input
                       type="text"

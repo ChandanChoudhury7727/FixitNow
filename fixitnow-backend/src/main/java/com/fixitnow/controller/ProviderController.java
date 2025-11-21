@@ -387,13 +387,13 @@ public class ProviderController {
         s.setCategory((String) body.getOrDefault("category", ""));
         s.setSubcategory((String) body.getOrDefault("subcategory", ""));
         s.setDescription((String) body.getOrDefault("description", ""));
-        
+
         Object priceObj = body.get("price");
         if (priceObj instanceof Number) s.setPrice(((Number) priceObj).doubleValue());
         else if (priceObj instanceof String) {
             try { s.setPrice(Double.parseDouble((String) priceObj)); } catch (Exception ignored) {}
         }
-        
+
         Object avail = body.get("availability");
         if (avail != null) {
             try {
@@ -402,12 +402,26 @@ public class ProviderController {
                 s.setAvailability(String.valueOf(avail));
             }
         }
-        
+
         String location = (String) body.getOrDefault("location", "");
+        // Treat location as user-provided human-readable name only
         s.setLocation(location);
 
-        // ✅ AUTO-GEOCODE: Automatically get lat/lng from location string
-        if (location != null && !location.isBlank()) {
+        // Prefer client-provided coordinates if present
+        Double latitude = null;
+        Double longitude = null;
+        if (body.get("latitude") != null) {
+            try { latitude = Double.valueOf(body.get("latitude").toString()); } catch (Exception ignored) {}
+        }
+        if (body.get("longitude") != null) {
+            try { longitude = Double.valueOf(body.get("longitude").toString()); } catch (Exception ignored) {}
+        }
+
+        if (latitude != null && longitude != null) {
+            s.setLatitude(latitude);
+            s.setLongitude(longitude);
+        } else if (location != null && !location.isBlank()) {
+            // Only geocode when lat/lng are missing
             geocodingService.geocode(location).ifPresent(latlng -> {
                 s.setLatitude(latlng[0]);
                 s.setLongitude(latlng[1]);
@@ -459,20 +473,40 @@ public class ProviderController {
             catch (Exception e) { s.setAvailability(String.valueOf(avail)); }
         }
         
+        // Handle location and coordinates update
         String newLocation = (String) body.get("location");
+        Double newLatitude = null;
+        Double newLongitude = null;
+        if (body.get("latitude") != null) {
+            try { newLatitude = Double.valueOf(body.get("latitude").toString()); } catch (Exception ignored) {}
+        }
+        if (body.get("longitude") != null) {
+            try { newLongitude = Double.valueOf(body.get("longitude").toString()); } catch (Exception ignored) {}
+        }
+
         if (newLocation != null) {
+            String oldLocation = s.getLocation();
+            // Keep user-provided location text as-is
             s.setLocation(newLocation);
-            
-            // ✅ RE-GEOCODE if location changed
-            if (!newLocation.isBlank() && !newLocation.equals(s.getLocation())) {
+
+            if (newLatitude != null && newLongitude != null) {
+                // Client provided precise coordinates; use them directly
+                s.setLatitude(newLatitude);
+                s.setLongitude(newLongitude);
+            } else if (!newLocation.isBlank() && (oldLocation == null || !oldLocation.equals(newLocation))) {
+                // Only geocode if location text actually changed and no lat/lng were provided
                 geocodingService.geocode(newLocation).ifPresent(latlng -> {
                     s.setLatitude(latlng[0]);
                     s.setLongitude(latlng[1]);
                     System.out.println("✅ Re-geocoded service location: " + newLocation + " -> [" + latlng[0] + ", " + latlng[1] + "]");
                 });
             }
+        } else if (newLatitude != null && newLongitude != null) {
+            // Location name unchanged but coordinates explicitly updated
+            s.setLatitude(newLatitude);
+            s.setLongitude(newLongitude);
         }
-        
+
         serviceRepo.save(s);
         return ResponseEntity.ok(Map.of("message", "Service updated"));
     }

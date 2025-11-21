@@ -134,15 +134,7 @@ export default function ServiceDetail(){
                   <p className="text-sm text-gray-600 mb-1">Location</p>
                   <p className="font-semibold text-gray-900">{service.location}</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-600 mb-1">Coordinates</p>
-                  <p className="font-semibold text-gray-900">
-                    {service.latitude && service.longitude 
-                      ? `${service.latitude.toFixed(2)}°, ${service.longitude.toFixed(2)}°`
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
+                {/* Coordinates are intentionally not shown to end users; only human-readable location is displayed */}
               </div>
             </div>
 
