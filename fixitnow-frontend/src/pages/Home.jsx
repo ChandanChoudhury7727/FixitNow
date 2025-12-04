@@ -4,7 +4,6 @@ import ElectricianImg from "../assets/Electrician.jpg";
 import PlumberImg from "../assets/Plumber.jpg";
 import CarpenterImg from "../assets/Carpenter.jpg";
 import CleaningImg from "../assets/cleaning.jpg";
-import { useNavigate } from "react-router-dom";
 
 const services = [
   {

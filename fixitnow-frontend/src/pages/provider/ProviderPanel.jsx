@@ -9,15 +9,6 @@ import { reverseGeocodeLatLng } from "../../utils/googleLocation";
 const TABS = ["Profile", "Services", "Offer Service", "Bookings", "Reviews", "Service Chats"];
 
 function Sidebar({ active, setActive, unreadCount }) {
-  const icons = {
-    "Profile": "👤",
-    "Services": "🛠️",
-    "Offer Service": "➕",
-    "Bookings": "📅",
-    "Reviews": "⭐",
-    "Service Chats": "💬"
-  };
-
   return (
     <aside className="w-full md:w-64 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-5 border border-white/50 hover:shadow-xl transition-all duration-300">
       <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
@@ -29,10 +20,10 @@ function Sidebar({ active, setActive, unreadCount }) {
           <button
             key={tab}
             onClick={() => setActive(tab)}
-            className={`block w-full text-left px-5 py-3.5 rounded-2xl transition-all duration-300 relative group ${
+            className={`block w-full text-left px-3 py-2 rounded-lg transition-colors relative ${
               active === tab
-                ? "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-500/50 transform scale-105"
-                : "text-slate-700 hover:bg-white hover:shadow-md hover:scale-102"
+                ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white"
+                : "text-gray-700 hover:bg-gray-100"
             }`}
             aria-pressed={active === tab}
             aria-label={`Open ${tab}`}
@@ -40,7 +31,7 @@ function Sidebar({ active, setActive, unreadCount }) {
             <div className="flex items-center justify-between">
               <span className="font-medium">{tab}</span>
               {tab === "Service Chats" && unreadCount > 0 && (
-                <span className="bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse shadow-lg">
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -146,10 +137,10 @@ function ProfilePane() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-xl p-8 border border-slate-200">
+      <div className="bg-white rounded-2xl shadow p-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-slate-600 font-medium">Loading profile…</div>
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-gray-600">Loading profile…</div>
         </div>
       </div>
     );
@@ -158,43 +149,30 @@ function ProfilePane() {
   const ALL = ["Electrician", "Plumber", "Carpenter", "Cleaning"];
 
   return (
-    <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-xl p-8 space-y-6 border border-slate-200">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-          <span className="text-2xl">👤</span>
-        </div>
-        <div>
-          <h4 className="text-2xl font-bold text-slate-800">Manage Profile</h4>
-          <p className="text-sm text-slate-600">Update your professional information</p>
-        </div>
-      </div>
+    <div className="bg-white rounded-2xl shadow p-6 space-y-4 border border-gray-100">
+      <h4 className="text-xl font-semibold text-gray-800">Manage Profile</h4>
 
       <div>
-        <div className="text-sm font-semibold mb-3 text-slate-700 flex items-center gap-2">
-          <span className="text-lg">🏷️</span>
-          <span>Service Categories</span>
-        </div>
+        <div className="text-sm font-medium mb-2 text-gray-700">Categories</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {ALL.map((c) => {
             const checked = form.categories.includes(c);
             return (
               <label
                 key={c}
-                className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${
-                  checked 
-                    ? "bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 shadow-md shadow-indigo-100 scale-105" 
-                    : "bg-white border-slate-200 hover:border-indigo-200 hover:shadow-md"
+                className={`flex items-center gap-3 p-3 rounded-lg border transition cursor-pointer ${
+                  checked ? "bg-indigo-50 border-indigo-200" : "bg-white border-gray-100"
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => toggle(c)}
-                  className="w-5 h-5 text-indigo-600 focus:ring-indigo-500 rounded-lg border-slate-300"
+                  className="w-4 h-4 text-indigo-600 focus:ring-indigo-200 rounded"
                   aria-checked={checked}
                   aria-label={`Toggle ${c}`}
                 />
-                <span className="text-sm font-medium text-slate-800">{c}</span>
+                <span className="text-sm font-medium text-gray-800">{c}</span>
               </label>
             );
           })}
@@ -202,107 +180,91 @@ function ProfilePane() {
       </div>
 
       <div>
-        <div className="text-sm font-semibold mb-2 text-slate-700 flex items-center gap-2">
-          <span className="text-lg">📝</span>
-          <span>Description</span>
-        </div>
+        <div className="text-sm font-medium mb-1 text-gray-700">Description</div>
         <textarea
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full border-2 border-slate-200 px-5 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all duration-200 bg-white"
+          className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200"
           rows={4}
-          placeholder="Describe your expertise and services..."
           aria-label="Profile description"
         />
       </div>
 
       <div>
-        <div className="text-sm font-semibold mb-2 text-slate-700 flex items-center gap-2">
-          <span className="text-lg">📍</span>
-          <span>Location</span>
-        </div>
-        <div className="flex gap-3">
+        <div className="text-sm font-medium mb-1 text-gray-700">Location</div>
+        <div className="flex gap-2">
           <input
             value={form.location}
             onChange={(e) => setForm({ ...form, location: e.target.value })}
-            className="flex-1 border-2 border-slate-200 px-5 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all duration-200 bg-white"
+            className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200"
             placeholder="City / area"
             aria-label="Location"
           />
           <button
             onClick={fetchMyLocation}
             disabled={locLoading}
-            className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 disabled:opacity-60 transition-all duration-300 shadow-lg shadow-blue-500/30 font-medium"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 disabled:opacity-60 transition shadow-sm"
             aria-label="Use my current location"
           >
-            {locLoading ? "Locating…" : "📍 Use my location"}
+            {locLoading ? "Locating…" : "Use my location"}
           </button>
         </div>
       </div>
 
       {/* Verification Status */}
-      <div className="border-t-2 border-slate-200 pt-6">
-        <div className="text-sm font-semibold mb-3 text-slate-700 flex items-center gap-2">
-          <span className="text-lg">✅</span>
-          <span>Verification Status</span>
-        </div>
-        <div className="flex items-center gap-3 mb-4">
-          <span className={`px-5 py-2.5 rounded-full text-sm font-bold shadow-lg ${
-            verificationStatus === "APPROVED" 
-              ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-emerald-500/30" :
-            verificationStatus === "REJECTED" 
-              ? "bg-gradient-to-r from-rose-500 to-red-500 text-white shadow-rose-500/30" :
-              "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-amber-500/30"
+      <div className="border-t pt-4">
+        <div className="text-sm font-medium mb-2 text-gray-700">Verification Status</div>
+        <div className="flex items-center gap-3 mb-3">
+          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            verificationStatus === "APPROVED" ? "bg-green-100 text-green-800" :
+            verificationStatus === "REJECTED" ? "bg-red-100 text-red-800" :
+            "bg-yellow-100 text-yellow-800"
           }`}>
-            {verificationStatus === "APPROVED" ? "✓ Verified Provider" :
-             verificationStatus === "REJECTED" ? "✗ Verification Rejected" :
-             "⏳ Verification Pending"}
+            {verificationStatus === "APPROVED" ? "✓ Verified" :
+             verificationStatus === "REJECTED" ? "✗ Rejected" :
+             "⏳ Pending Verification"}
           </span>
         </div>
         
         {verificationNotes && (
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl mb-4 border-2 border-blue-200">
-            <div className="text-xs font-semibold text-blue-700 mb-2 flex items-center gap-2">
-              <span>📋</span>
-              <span>Admin Notes:</span>
-            </div>
-            <div className="text-sm text-slate-800">{verificationNotes}</div>
+          <div className="bg-gray-50 p-3 rounded-lg mb-3">
+            <div className="text-xs text-gray-600 mb-1">Admin Notes:</div>
+            <div className="text-sm text-gray-800">{verificationNotes}</div>
           </div>
         )}
 
         <div>
-          <div className="text-sm font-semibold mb-2 text-slate-700">Verification Document URL</div>
+          <div className="text-sm font-medium mb-1 text-gray-700">Verification Document URL</div>
           <input
             value={documentUrl}
             onChange={(e) => setDocumentUrl(e.target.value)}
-            className="w-full border-2 border-slate-200 px-5 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all duration-200 bg-white"
+            className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200"
             placeholder="Enter document URL (e.g., Google Drive link, Dropbox link)"
             aria-label="Verification document URL"
           />
-          <div className="text-xs text-slate-500 mt-2 flex items-start gap-2">
-            <span>💡</span>
-            <span>Upload your verification documents (ID, certifications) to a cloud service and paste the link here</span>
+          <div className="text-xs text-gray-500 mt-1">
+            Upload your verification documents (ID, certifications) to a cloud service and paste the link here
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 pt-4">
+      <div className="flex items-center gap-3">
         <button
           onClick={save}
-          className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-8 py-4 rounded-2xl font-bold hover:shadow-xl hover:shadow-indigo-500/50 transition-all duration-300 transform hover:scale-105"
+          className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-2 rounded-xl font-semibold hover:from-indigo-700 hover:to-blue-700 shadow-md transition"
         >
-          💾 Save Profile
+          Save Profile
         </button>
 
         <button
           onClick={() => setForm({ categories: [], description: "", location: "" })}
-          className="px-6 py-4 rounded-2xl border-2 border-slate-300 hover:bg-slate-50 hover:shadow-lg transition-all duration-300 font-medium text-slate-700"
+          className="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition"
         >
-          🔄 Reset
+          Reset
         </button>
 
         <div className="ml-auto text-sm" role="status" aria-live="polite">
-          <span className={`font-bold ${msg.startsWith("Profile saved") ? "text-emerald-600" : "text-rose-600"}`}>{msg}</span>
+          <span className={`${msg.startsWith("Profile saved") ? "text-green-700" : "text-red-700"}`}>{msg}</span>
         </div>
       </div>
     </div>
@@ -425,39 +387,36 @@ function ServicesPane() {
     };
 
     return (
-      <div className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-3xl shadow-xl border-2 border-slate-200">
-        <h5 className="font-bold text-xl mb-5 text-slate-800 flex items-center gap-2">
-          <span className="text-2xl">➕</span>
-          <span>Create New Service</span>
-        </h5>
+      <div className="bg-white p-4 rounded-2xl shadow border border-gray-100">
+        <h5 className="font-semibold mb-3">Create Service</h5>
         <input
-          className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white"
+          className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
           placeholder="Category"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
         />
         <input
-          className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white"
+          className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
           placeholder="Subcategory"
           value={form.subcategory}
           onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
         />
         <textarea
-          className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white"
+          className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
           placeholder="Description"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           rows={3}
         />
         <input
-          className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white"
+          className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
           placeholder="Price"
           value={form.price}
           onChange={(e) => setForm({ ...form, price: e.target.value })}
         />
-        <div className="flex gap-3 mb-3">
+        <div className="flex gap-2 mb-2">
           <input
-            className="flex-1 border-2 border-slate-200 px-4 py-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white"
+            className="w-full border-2 border-gray-200 px-3 py-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
             placeholder="Location"
             value={form.location}
             onChange={(e) => setForm({ ...form, location: e.target.value })}
@@ -465,15 +424,15 @@ function ServicesPane() {
           <button
             onClick={fetchMyLocation}
             disabled={locLoading}
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 disabled:opacity-60 transition-all shadow-lg shadow-blue-500/30 font-medium"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 disabled:opacity-60 transition"
             aria-label="Use my location"
           >
-            {locLoading ? "Locating…" : "📍"}
+            {locLoading ? "Locating…" : "Use my location"}
           </button>
         </div>
-        <div className="flex gap-3">
-          <button onClick={submit} className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all">✓ Create</button>
-          <button onClick={onClose} className="px-6 py-3 rounded-2xl border-2 border-slate-300 hover:bg-slate-50 font-medium">Cancel</button>
+        <div className="flex gap-2">
+          <button onClick={submit} className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl">Create</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-xl border border-gray-200">Cancel</button>
         </div>
       </div>
     );
@@ -481,10 +440,10 @@ function ServicesPane() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-xl p-8 border border-slate-200">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-slate-600 font-medium">Loading services…</div>
+      <div className="bg-white rounded-2xl shadow p-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-gray-600">Loading services…</div>
         </div>
       </div>
     );
@@ -492,57 +451,36 @@ function ServicesPane() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-            <span className="text-2xl">🛠️</span>
-          </div>
-          <div>
-            <h4 className="text-2xl font-bold text-slate-800">My Services</h4>
-            <p className="text-sm text-slate-600">Manage your service offerings</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
+      <div className="flex justify-between items-center mb-4">
+        <h4 className="text-xl font-semibold text-gray-800">My Services</h4>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setCreating(true)}
-            className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all"
+            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-2 rounded-xl font-medium shadow-sm hover:from-green-600 hover:to-emerald-700 transition"
             aria-label="Create new service"
           >
-            ➕ New Service
+            + New Service
           </button>
-          <button onClick={fetch} className="px-5 py-3 rounded-2xl border-2 border-slate-300 hover:bg-slate-50 hover:shadow-lg transition-all font-medium">🔄</button>
+          <button onClick={fetch} className="px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50">Refresh</button>
         </div>
       </div>
 
-      {creating && <div className="mb-6"><CreateForm onClose={() => setCreating(false)} /></div>}
+      {creating && <div className="mb-4"><CreateForm onClose={() => setCreating(false)} /></div>}
 
       {services.length === 0 ? (
-        <div className="text-slate-500 text-center py-12 bg-gradient-to-br from-white to-slate-50 rounded-3xl border-2 border-dashed border-slate-300">
-          <span className="text-6xl mb-4 block">📦</span>
-          <p className="text-lg font-medium">No services yet</p>
-          <p className="text-sm">Create one to get started</p>
-        </div>
+        <div className="text-gray-500">No services. Create one to get started.</div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {services.map((s) => (
-            <div key={s.id} className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 flex justify-between items-start border border-slate-200">
+            <div key={s.id} className="p-4 bg-white rounded-2xl shadow-sm flex justify-between items-start border border-gray-100">
               <div>
-                <div className="font-bold text-lg text-slate-800 mb-2">{s.category} {s.subcategory ? `— ${s.subcategory}` : ""}</div>
-                <div className="text-sm text-slate-600 mb-3">{s.description}</div>
-                <div className="flex items-center gap-4 text-sm text-slate-500">
-                  <span className="flex items-center gap-1">
-                    <span>💰</span>
-                    <span className="font-semibold">₹{s.price ?? "N/A"}</span>
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span>📍</span>
-                    <span>{s.location ?? "N/A"}</span>
-                  </span>
-                </div>
+                <div className="font-semibold text-gray-800">{s.category} {s.subcategory ? `— ${s.subcategory}` : ""}</div>
+                <div className="text-sm text-gray-600 mt-1">{s.description}</div>
+                <div className="text-sm text-gray-500 mt-1">Price: {s.price ?? "N/A"} · Location: {s.location ?? "N/A"}</div>
               </div>
               <div className="flex flex-col gap-2">
-                <button onClick={() => openEdit(s)} className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl transition-all">✏️ Edit</button>
-                <button onClick={() => remove(s.id)} className="bg-gradient-to-r from-rose-500 to-red-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg shadow-rose-500/30 hover:shadow-xl transition-all">🗑️ Delete</button>
+                <button onClick={() => openEdit(s)} className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 py-1 rounded-xl">Edit</button>
+                <button onClick={() => remove(s.id)} className="bg-red-500 text-white px-3 py-1 rounded-xl">Delete</button>
               </div>
             </div>
           ))}
@@ -550,22 +488,19 @@ function ServicesPane() {
       )}
 
       {editing && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-xl bg-white p-8 rounded-3xl shadow-2xl border border-slate-200">
-            <h4 className="text-xl font-bold mb-5 text-slate-800 flex items-center gap-2">
-              <span className="text-2xl">✏️</span>
-              <span>Edit Service</span>
-            </h4>
-            <input className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none" placeholder="Category" value={editing.category || ""} onChange={e => setEditing({ ...editing, category: e.target.value })} />
-            <input className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none" placeholder="Subcategory" value={editing.subcategory || ""} onChange={e => setEditing({ ...editing, subcategory: e.target.value })} />
-            <textarea className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none" placeholder="Description" rows={3} value={editing.description || ""} onChange={e => setEditing({ ...editing, description: e.target.value })} />
-            <input className="w-full border-2 border-slate-200 px-4 py-3 mb-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none" placeholder="Price" value={editing.price ?? ""} onChange={e => setEditing({ ...editing, price: e.target.value })} />
-            <div className="flex gap-3 mb-5">
-              <input className="w-full border-2 border-slate-200 px-4 py-3 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none" placeholder="Location" value={editing.location ?? ""} onChange={e => setEditing({ ...editing, location: e.target.value })} />
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="w-full max-w-xl bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+            <h4 className="text-lg font-semibold mb-3">Edit Service</h4>
+            <input className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Category" value={editing.category || ""} onChange={e => setEditing({ ...editing, category: e.target.value })} />
+            <input className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Subcategory" value={editing.subcategory || ""} onChange={e => setEditing({ ...editing, subcategory: e.target.value })} />
+            <textarea className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Description" rows={3} value={editing.description || ""} onChange={e => setEditing({ ...editing, description: e.target.value })} />
+            <input className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Price" value={editing.price ?? ""} onChange={e => setEditing({ ...editing, price: e.target.value })} />
+            <div className="flex gap-2 mb-4">
+              <input className="w-full border-2 border-gray-200 px-3 py-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Location" value={editing.location ?? ""} onChange={e => setEditing({ ...editing, location: e.target.value })} />
             </div>
-            <div className="flex gap-3">
-              <button onClick={saveEdit} className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all">✓ Save</button>
-              <button onClick={closeEdit} className="px-6 py-3 rounded-2xl border-2 border-slate-300 hover:bg-slate-50 font-medium">Cancel</button>
+            <div className="flex gap-2">
+              <button onClick={saveEdit} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl">Save</button>
+              <button onClick={closeEdit} className="px-4 py-2 rounded-xl border border-gray-200">Cancel</button>
             </div>
           </div>
         </div>
@@ -635,33 +570,25 @@ function OfferServicePane() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-xl p-8 border border-slate-200">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center shadow-lg">
-          <span className="text-2xl">➕</span>
-        </div>
-        <div>
-          <h4 className="text-2xl font-bold text-slate-800">Offer a Service</h4>
-          <p className="text-sm text-slate-600">Create a new service offering</p>
-        </div>
-      </div>
-      <input className="w-full border-2 border-slate-200 px-5 py-4 mb-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-      <input className="w-full border-2 border-slate-200 px-5 py-4 mb-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white" placeholder="Subcategory" value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} />
-      <textarea className="w-full border-2 border-slate-200 px-5 py-4 mb-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white" placeholder="Description" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-      <input className="w-full border-2 border-slate-200 px-5 py-4 mb-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white" placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-      <div className="flex gap-3 mb-5">
-        <input className="flex-1 border-2 border-slate-200 px-5 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none bg-white" placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+    <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+      <h4 className="text-xl font-semibold mb-3 text-gray-800">Offer a Service</h4>
+      <input className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+      <input className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Subcategory" value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} />
+      <textarea className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Description" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+      <input className="w-full border-2 border-gray-200 px-3 py-2 mb-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+      <div className="flex gap-2 mb-4">
+        <input className="w-full border-2 border-gray-200 px-3 py-2 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none" placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
         <button
           onClick={fetchMyLocation}
           disabled={locLoading}
-          className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 disabled:opacity-60 transition-all shadow-lg shadow-blue-500/30 font-medium"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 disabled:opacity-60 transition"
         >
-          {locLoading ? "Locating…" : "📍 Use my location"}
+          {locLoading ? "Locating…" : "Use my location"}
         </button>
       </div>
-      <div className="flex gap-3 items-center">
-        <button onClick={submit} className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all">✓ Create Service</button>
-        {msg && <div className="text-sm font-bold text-emerald-600">{msg}</div>}
+      <div className="flex gap-2">
+        <button onClick={submit} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl">Create</button>
+        {msg && <div className="self-center text-sm text-green-700">{msg}</div>}
       </div>
     </div>
   );
@@ -680,6 +607,7 @@ function BookingsPane({ setChatCustomer }) {
       const bookingsData = res.data || [];
       setBookings(bookingsData);
 
+      // Fetch customer details
       const details = {};
       for (const booking of bookingsData) {
         try {
@@ -708,6 +636,7 @@ function BookingsPane({ setChatCustomer }) {
       setUpdatingId(id);
       const response = await api.post(`/api/provider/bookings/${id}/${action}`);
       
+      // Update local state immediately
       setBookings(prevBookings => 
         prevBookings.map(booking => 
           booking.id === id 
@@ -717,6 +646,7 @@ function BookingsPane({ setChatCustomer }) {
       );
     } catch (e) {
       console.error(e);
+      // Refresh to get correct state from server
       await fetch();
     } finally {
       setUpdatingId(null);
@@ -725,72 +655,42 @@ function BookingsPane({ setChatCustomer }) {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-xl p-8 border border-slate-200">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-slate-600 font-medium">Loading bookings…</div>
+      <div className="bg-white rounded-2xl shadow p-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-gray-600">Loading bookings…</div>
         </div>
       </div>
     );
   }
-  
   if (bookings.length === 0) {
-    return (
-      <div className="text-slate-500 text-center py-12 bg-gradient-to-br from-white to-slate-50 rounded-3xl border-2 border-dashed border-slate-300">
-        <span className="text-6xl mb-4 block">📅</span>
-        <p className="text-lg font-medium">No booking requests</p>
-        <p className="text-sm">New bookings will appear here</p>
-      </div>
-    );
+    return <div className="p-4 text-gray-500">No booking requests.</div>;
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-          <span className="text-2xl">📅</span>
-        </div>
-        <div>
-          <h4 className="text-2xl font-bold text-slate-800">Booking Requests</h4>
-          <p className="text-sm text-slate-600">Manage your customer bookings</p>
-        </div>
-      </div>
-
+    <div className="space-y-3">
       {bookings.map((b) => {
         const customer = customerDetails[b.customerId];
         return (
-          <div key={b.id} className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200">
-            <div className="flex justify-between items-start mb-4">
+          <div key={b.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex justify-between items-start">
               <div>
-                <div className="font-bold text-lg text-slate-800 mb-1">Booking #{b.id} — Service {b.serviceId || "—"}</div>
-                <div className="text-sm text-slate-600">
-                  Customer: <span className="font-semibold text-indigo-600">{customer?.name || `#${b.customerId}`}</span>
+                <div className="font-semibold text-gray-800">Booking #{b.id} — Service {b.serviceId || "—"}</div>
+                <div className="text-sm text-gray-500 mt-1">
+                  Customer: <span className="font-medium text-gray-700">{customer?.name || `#${b.customerId}`}</span>
                   <span className="mx-2">·</span>
-                  Created: <span className="text-slate-500">{b.createdAt ? new Date(b.createdAt).toLocaleString() : "N/A"}</span>
+                  Created: <span className="text-gray-600">{b.createdAt ? new Date(b.createdAt).toLocaleString() : "N/A"}</span>
                 </div>
-                {customer?.email && <div className="text-sm text-slate-500">✉️ {customer.email}</div>}
+                {customer?.email && <div className="text-sm text-gray-500">Email: {customer.email}</div>}
               </div>
               <div className="text-sm">
-                <span className={`px-4 py-2 rounded-full text-xs font-bold ${
-                  b.status === "PENDING" ? "bg-gradient-to-r from-amber-400 to-yellow-400 text-white shadow-lg shadow-amber-400/30" :
-                  b.status === "CONFIRMED" ? "bg-gradient-to-r from-emerald-400 to-green-400 text-white shadow-lg shadow-emerald-400/30" :
-                  b.status === "COMPLETED" ? "bg-gradient-to-r from-blue-400 to-cyan-400 text-white shadow-lg shadow-blue-400/30" :
-                  b.status === "REJECTED" ? "bg-gradient-to-r from-rose-400 to-red-400 text-white shadow-lg shadow-rose-400/30" :
-                  "bg-gradient-to-r from-slate-400 to-gray-400 text-white shadow-lg shadow-slate-400/30"
-                }`}>{b.status}</span>
+                <span className="px-2 py-1 rounded text-xs bg-indigo-100 text-indigo-800">{b.status}</span>
               </div>
             </div>
 
-            <p className="mt-3 text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-200">{b.notes || "No notes."}</p>
-            <div className="mt-3 flex items-center gap-4 text-sm text-slate-600">
-              <span className="flex items-center gap-1">
-                <span>📍</span>
-                <span>{customer?.location || "Location not provided"}</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span>🕒</span>
-                <span>{b.bookingDate ? new Date(b.bookingDate).toLocaleDateString() : "N/A"} {b.timeSlot || ""}</span>
-              </span>
+            <p className="mt-2 text-gray-700">{b.notes || "No notes."}</p>
+            <div className="mt-2 text-sm text-gray-500">
+              📍 {customer?.location || "Location not provided"} · 🕒 {b.bookingDate ? new Date(b.bookingDate).toLocaleDateString() : "N/A"} {b.timeSlot || ""}
             </div>
 
             <div className="flex gap-2 mt-3">
@@ -807,7 +707,7 @@ function BookingsPane({ setChatCustomer }) {
               )}
               <button
                 onClick={() => setChatCustomer({ id: b.customerId, name: customer?.name || `Customer #${b.customerId}` })}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-5 py-2.5 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all font-bold shadow-lg shadow-purple-500/30"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-xl hover:from-purple-600 hover:to-pink-600 transition"
               >
                 💬 Chat
               </button>
@@ -817,49 +717,49 @@ function BookingsPane({ setChatCustomer }) {
                   <button 
                     onClick={() => update(b.id, "accept")} 
                     disabled={updatingId === b.id}
-                    className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-5 py-2.5 rounded-xl hover:from-emerald-600 hover:to-green-600 disabled:opacity-60 transition-all font-bold shadow-lg shadow-emerald-500/30"
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-60 transition"
                   >
-                    {updatingId === b.id ? "Updating…" : "✓ Accept"}
+                    {updatingId === b.id ? "Updating…" : "Accept"}
                   </button>
                   <button 
                     onClick={() => update(b.id, "reject")} 
                     disabled={updatingId === b.id}
-                    className="bg-gradient-to-r from-rose-500 to-red-500 text-white px-5 py-2.5 rounded-xl hover:from-rose-600 hover:to-red-600 disabled:opacity-60 transition-all font-bold shadow-lg shadow-rose-500/30"
+                    className="bg-red-500 text-white px-3 py-1 rounded-xl hover:bg-red-600 disabled:opacity-60 transition"
                   >
-                    {updatingId === b.id ? "Updating…" : "✗ Reject"}
+                    {updatingId === b.id ? "Updating…" : "Reject"}
                   </button>
                 </>
               )}
 
               {b.status === "CONFIRMED" && (
                 <>
-                  <div className="text-emerald-700 font-bold bg-gradient-to-r from-emerald-50 to-green-50 px-5 py-2.5 rounded-xl border-2 border-emerald-300 text-sm shadow-lg shadow-emerald-500/20">
+                  <div className="text-green-700 font-semibold bg-green-50 px-3 py-1 rounded-xl border border-green-200 text-sm">
                     ✓ Accepted
                   </div>
                   <button 
                     onClick={() => update(b.id, "complete")} 
                     disabled={updatingId === b.id}
-                    className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-2.5 rounded-xl hover:from-indigo-600 hover:to-purple-600 disabled:opacity-60 transition-all font-bold shadow-lg shadow-indigo-500/30"
+                    className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 py-1 rounded-xl hover:from-indigo-700 hover:to-blue-700 disabled:opacity-60 transition"
                   >
-                    {updatingId === b.id ? "Updating…" : "✓ Mark Complete"}
+                    {updatingId === b.id ? "Updating…" : "Mark Complete"}
                   </button>
                 </>
               )}
 
               {b.status === "REJECTED" && (
-                <div className="text-rose-700 font-bold bg-gradient-to-r from-rose-50 to-red-50 px-5 py-2.5 rounded-xl border-2 border-rose-300 text-sm shadow-lg shadow-rose-500/20">
+                <div className="text-red-700 font-semibold bg-red-50 px-3 py-1 rounded-xl border border-red-200 text-sm">
                   ✗ Rejected
                 </div>
               )}
 
               {b.status === "COMPLETED" && (
-                <div className="text-blue-700 font-bold bg-gradient-to-r from-blue-50 to-cyan-50 px-5 py-2.5 rounded-xl border-2 border-blue-300 text-sm shadow-lg shadow-blue-500/20">
+                <div className="text-blue-700 font-semibold bg-blue-50 px-3 py-1 rounded-xl border border-blue-200 text-sm">
                   ✓ Completed
                 </div>
               )}
 
               {b.status === "CANCELLED" && (
-                <div className="text-slate-700 font-bold bg-gradient-to-r from-slate-50 to-gray-50 px-5 py-2.5 rounded-xl border-2 border-slate-300 text-sm shadow-lg shadow-slate-500/20">
+                <div className="text-gray-700 font-semibold bg-gray-50 px-3 py-1 rounded-xl border border-gray-200 text-sm">
                   Cancelled by Customer
                 </div>
               )}
@@ -897,10 +797,10 @@ function ReviewsPane() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-xl p-8 border border-slate-200">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-slate-600 font-medium">Loading reviews…</div>
+      <div className="bg-white rounded-2xl shadow p-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-gray-600">Loading reviews…</div>
         </div>
       </div>
     );
@@ -908,52 +808,35 @@ function ReviewsPane() {
 
   return (
     <div>
-      <div className="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-xl p-8 mb-6 border border-slate-200">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-400 flex items-center justify-center shadow-lg">
-            <span className="text-2xl">⭐</span>
-          </div>
-          <div>
-            <h4 className="text-2xl font-bold text-slate-800">My Reviews</h4>
-            <p className="text-sm text-slate-600">See what customers are saying</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="text-5xl font-black bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent">{avgRating.toFixed(1)}</div>
-          <div>
-            <div className="flex mb-1">
-              {[...Array(5)].map((_, i) => (
-                <span key={i} className={i < Math.round(avgRating) ? "text-amber-400 text-2xl" : "text-slate-300 text-2xl"}>★</span>
-              ))}
-            </div>
-            <div className="text-slate-600 font-medium">{reviews.length} total reviews</div>
-          </div>
+      <div className="bg-white rounded-2xl shadow p-6 mb-6 border border-gray-100">
+        <h4 className="text-xl font-semibold mb-2 text-gray-800">My Reviews</h4>
+        <div className="flex items-center gap-4">
+          <div className="text-3xl font-bold text-indigo-700">{avgRating.toFixed(1)} ⭐</div>
+          <div className="text-gray-600">{reviews.length} reviews</div>
         </div>
       </div>
 
       {reviews.length === 0 ? (
-        <div className="text-slate-500 text-center py-12 bg-gradient-to-br from-white to-slate-50 rounded-3xl border-2 border-dashed border-slate-300">
-          <span className="text-6xl mb-4 block">📝</span>
-          <p className="text-lg font-medium">No reviews yet</p>
-          <p className="text-sm">Complete bookings to receive reviews</p>
-        </div>
+        <div className="p-4 text-gray-500">No reviews yet.</div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {reviews.map((r) => (
-            <div key={r.id} className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200">
+            <div key={r.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-3">
+                  <div className="flex items-center gap-3 mb-1">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <span key={i} className={i < r.rating ? "text-amber-400 text-2xl" : "text-slate-300 text-2xl"}>★</span>
+                        <span key={i} className={i < r.rating ? "text-yellow-400 text-xl" : "text-gray-300 text-xl"}>
+                          ★
+                        </span>
                       ))}
                     </div>
-                    <span className="text-sm font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">Customer #{r.customerId}</span>
+                    <span className="text-sm text-gray-600">by Customer #{r.customerId}</span>
                   </div>
-                  <p className="text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-200">{r.comment || "No comment"}</p>
+                  <p className="text-gray-700">{r.comment || "No comment"}</p>
                 </div>
-                <div className="text-sm text-slate-500 ml-4">
+                <div className="text-sm text-gray-500">
                   {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}
                 </div>
               </div>
@@ -982,6 +865,7 @@ export default function ProviderPanel() {
     };
 
     fetchTotalUnreadChats();
+    // Refresh unread count every 5 seconds
     const interval = setInterval(fetchTotalUnreadChats, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -1010,9 +894,7 @@ export default function ProviderPanel() {
           <div className="col-span-1">
             <Sidebar active={active} setActive={setActive} unreadCount={totalUnreadChats} />
           </div>
-          
-          {/* Main Content - Takes remaining space with proper margin */}
-          <div className="flex-1 min-w-0">
+          <div className="col-span-1 md:col-span-4 space-y-6">
             {active === "Profile" && <ProfilePane />}
             {active === "Services" && <ServicesPane />}
             {active === "Offer Service" && <OfferServicePane />}

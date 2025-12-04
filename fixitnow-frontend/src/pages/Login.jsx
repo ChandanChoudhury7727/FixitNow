@@ -11,43 +11,49 @@ export default function Login() {
   const [msg, setMsg] = useState("");
   const nav = useNavigate();
 
-  const submit = async (e) => {
-    e.preventDefault();
+const submit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await api.post("/api/auth/login", { email, password });
+    const data = res.data;
+
+    const accessToken = data.accessToken || data.token;
+    const refreshToken = data.refreshToken;
+    const role = data.role;
+
+    if (accessToken) localStorage.setItem("accessToken", accessToken);
+    if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+    if (role) localStorage.setItem("role", role);
+
+    // 🔥 Force axios to reload the token before calling /me
+    api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+    // ⬇️ Now this will ALWAYS send token correctly  
+    let userId = null;
     try {
-      const res = await api.post("/api/auth/login", { email, password });
-      const data = res.data;
-
-      const accessToken = data.accessToken || data.token;
-      const refreshToken = data.refreshToken;
-      const role = data.role;
-
-      if (accessToken) localStorage.setItem("accessToken", accessToken);
-      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-      if (role) localStorage.setItem("role", role);
-
-      // ✅ Fetch user details to get user ID
-      try {
-        const userRes = await api.get("/api/auth/me");
-        if (userRes.data && userRes.data.id) {
-          localStorage.setItem("userId", userRes.data.id.toString());
-        }
-      } catch (err) {
-        console.error("Failed to fetch user details:", err);
+      const userRes = await api.get("/api/auth/me");
+      if (userRes.data && userRes.data.id) {
+        userId = userRes.data.id.toString();
+        localStorage.setItem("userId", userId);
       }
-
-      setMsg("✅ Login successful! Redirecting...");
-
-      setTimeout(() => {
-        if (role === "CUSTOMER") nav("/customer-panel");
-        else if (role === "PROVIDER") nav("/provider");
-        else if (role === "ADMIN") nav("/admin-dashboard");
-        else nav("/");
-      }, 800);
     } catch (err) {
-      const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
-      setMsg(serverMsg ? `❌ ${serverMsg}` : "❌ Invalid credentials");
+      console.error("❌ Failed to fetch user details:", err);
     }
-  };
+
+    setMsg("✅ Login successful! Redirecting...");
+
+    setTimeout(() => {
+      if (role === "CUSTOMER") nav("/customer-panel");
+      else if (role === "PROVIDER") nav("/provider");
+      else if (role === "ADMIN") nav("/admin-dashboard");
+      else nav("/");
+    }, 800);
+
+  } catch (err) {
+    const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
+    setMsg(serverMsg ? `❌ ${serverMsg}` : "❌ Invalid credentials");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
