@@ -1,3 +1,6 @@
+<img width="1131" height="802" alt="image" src="https://github.com/user-attachments/assets/becc46b7-a2fd-42be-9ae9-20366412edeb" />
+
+
 # 🏠 FixItNow - Home Services Marketplace Platform
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen.svg)](https://spring.io/projects/spring-boot)
